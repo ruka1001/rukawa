@@ -17,7 +17,7 @@ main{max-width:1120px;margin:30px auto;padding:0 20px 60px}.intro{display:flex;j
 .composer{border-top:1px solid var(--line);padding:17px 22px;background:#fcfdff}.composer textarea{min-height:76px}.composer-actions{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:9px}.composer-actions small{color:var(--muted);font-size:11px}
 .notice{padding:12px 14px;border-radius:11px;background:#f4f7fa;color:#566779;font-size:12px;margin-top:14px}.notice.warn{background:var(--orange2);color:#8c5428}.notice.good{background:var(--green2);color:#25664f}
 .task-card{border:1px solid var(--line);border-radius:13px;padding:16px;margin:14px 0;background:#fff}.task-card h3{font-size:14px;margin:0 0 8px}.task-card p{margin:0}.rubric{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}.score{background:#f7f9fb;border-radius:10px;padding:12px}.score b{display:block;font-size:20px}.score span{font-size:11px;color:var(--muted)}
-.original-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}.original-head a{font-size:12px;color:var(--blue);white-space:nowrap}.original-head h3{margin:0 0 3px}.task-card iframe{width:100%;height:520px;border:1px solid var(--line);border-radius:9px;background:#f7f9fb}.attachment-preview{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.attachment-item{font-size:11px;padding:6px 9px;border:1px solid var(--line);border-radius:8px;background:#f7f9fb;color:var(--muted)}.attachment-item img{display:block;max-width:130px;max-height:100px;object-fit:contain;margin-bottom:4px;border-radius:5px}.hidden{display:none!important}.loading{display:inline-flex;gap:8px;align-items:center;color:var(--muted);font-size:12px}.dot{width:6px;height:6px;border-radius:50%;background:#8ca4c2;animation:pulse 1s infinite alternate}@keyframes pulse{to{opacity:.25;transform:translateY(-3px)}}
+.original-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}.original-head a{font-size:12px;color:var(--blue);white-space:nowrap}.original-head h3{margin:0 0 3px}.question-body{margin-top:14px;padding:18px 20px;border:1px solid #e5eaf0;border-radius:12px;background:#fff;color:#243448;line-height:1.9}.question-body p{margin:8px 0}.question-body .q-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 18px;margin:10px 0 14px}.question-body .q-part{margin:10px 0}.question-body table{width:100%;border-collapse:collapse;margin:10px 0;font-size:14px}.question-body th,.question-body td{border:1px solid #dfe6ee;padding:8px 10px;text-align:center}.question-body .formula{font-family:Georgia,"Times New Roman",serif;font-size:1.05em}.question-body .diagram{padding:12px;margin:12px 0;border:1px dashed #cbd6e2;border-radius:9px;background:#f8fafc;text-align:center}.attachment-preview{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.attachment-item{font-size:11px;padding:6px 9px;border:1px solid var(--line);border-radius:8px;background:#f7f9fb;color:var(--muted)}.attachment-item img{display:block;max-width:130px;max-height:100px;object-fit:contain;margin-bottom:4px;border-radius:5px}.hidden{display:none!important}.loading{display:inline-flex;gap:8px;align-items:center;color:var(--muted);font-size:12px}.dot{width:6px;height:6px;border-radius:50%;background:#8ca4c2;animation:pulse 1s infinite alternate}@keyframes pulse{to{opacity:.25;transform:translateY(-3px)}}
 footer{max-width:1120px;margin:0 auto;padding:0 20px 30px;color:#8a96a4;font-size:11px}
 @media(max-width:800px){.layout{grid-template-columns:1fr}.side{position:static}.steps{grid-template-columns:repeat(5,minmax(0,1fr));gap:3px}.step{display:grid;justify-items:center;text-align:center;padding:7px 2px;font-size:10px}.step .num{margin:auto}.side hr,.side .config{display:none}.intro{display:block}.header-right .pill{display:none}.task-card iframe{height:420px}.original-head{display:block}.original-head a{display:inline-block;margin-top:6px}}
 </style>
@@ -61,9 +61,9 @@ footer{max-width:1120px;margin:0 auto;padding:0 20px 30px;color:#8a96a4;font-siz
    <div class="content">
     <div class="welcome" id="welcome"><h2>欢迎来到概念诊断实验室</h2><p>你将与一位“装懂同伴”展开对话。请记住：答案看起来正确，不代表推理一定正确。真正重要的是你能否提出关键问题。</p></div>
     <div id="originalQuestionCard" class="task-card hidden">
-      <div class="original-head"><div><h3 id="originalTitle">高考原卷题目</h3><div class="hint" id="originalMeta"></div></div><a id="originalLink" href="#" target="_blank" rel="noopener">在新窗口打开原卷</a></div>
-      <iframe id="originalFrame" title="高考原卷题目" loading="lazy"></iframe>
-      <p class="hint" style="margin-top:8px">此处展示原卷 PDF 页面。题干、图表和选项以原卷为准；下方同伴分析是 AI 学习活动设计，不属于原卷内容。</p>
+      <div class="original-head"><div><h3 id="originalTitle">高考原卷题目</h3><div class="hint" id="originalMeta"></div></div><a id="originalLink" href="#" target="_blank" rel="noopener">查看原卷 PDF（备用）</a></div>
+      <div id="originalQuestionBody" class="question-body"></div>
+      <p class="hint" style="margin-top:8px">题干与选项直接呈现在网页中，便于阅读和互动；可通过右上角链接核对完整原卷。下方同伴分析为本 Demo 编写的教学示例，不属于原卷内容。</p>
     </div>
     <div class="chat" id="chat" aria-live="polite">
      <div class="msg"><div class="avatar">AI</div><div class="bubble"><div class="who">装懂同伴</div>嗨！我已经学会这个概念啦。你可以随便考考我，我觉得自己肯定能答对！</div></div>
@@ -119,30 +119,34 @@ const systemPrompt=()=>`你是面向高中学生的${state.subject}“装懂同�
 const examBank={
 "理想气体状态变化":{
  title:"2024年普通高中学业水平等级性考试（北京卷）物理第3题",
- meta:"2024年北京高考物理真题 · 第一部分第3题 · 原卷第1页",
+ meta:"2024年北京高考物理真题 · 第一部分第3题",
  url:"https://cdn.zgkao.com/17199700271072024%E5%8C%97%E4%BA%AC%E9%AB%98%E8%80%83%E7%9C%9F%E9%A2%98%E7%89%A9%E7%90%86%EF%BC%88%E6%95%99%E5%B8%88%E7%89%88%EF%BC%89.pdf",
  page:1,
+ body:`<p>一个气泡从恒温水槽的底部缓慢上浮，将气泡内的气体视为理想气体，且气体分子个数不变，外界大气压不变。在上浮过程中气泡内气体（　　）</p><div class="q-options"><div>A．内能变大</div><div>B．压强变大</div><div>C．体积不变</div><div>D．从水中吸热</div></div>`,
  analysis:"我觉得这题主要看气泡上浮时外界压强的变化。题目说水槽恒温、气体分子数不变，所以我会用理想气体状态方程分析。气泡上升时体积会变大，温度保持不变，因此内能没有变化。我的理解是，气体膨胀时外界对气体做功，所以气体需要向外放热；这应该能解释它上浮过程中的能量变化。"
 },
 "牛顿第二定律与连接体":{
  title:"2024年普通高中学业水平等级性考试（北京卷）物理第4题",
- meta:"2024年北京高考物理真题 · 第一部分第4题 · 原卷第1页",
+ meta:"2024年北京高考物理真题 · 第一部分第4题",
  url:"https://cdn.zgkao.com/17199700271072024%E5%8C%97%E4%BA%AC%E9%AB%98%E8%80%83%E7%9C%9F%E9%A2%98%E7%89%A9%E7%90%86%EF%BC%88%E6%95%99%E5%B8%88%E7%89%88%EF%BC%89.pdf",
  page:1,
+ body:`<p>如图所示，飞船与空间站对接后，在推力 <span class="formula">F</span> 作用下一起向前运动。飞船和空间站的质量分别为 <span class="formula">m</span> 和 <span class="formula">M</span>，则飞船和空间站之间的作用力大小为（　　）</p><div class="diagram">飞船（质量 m）　⇄　空间站（质量 M）<br/><span class="hint">两者对接后作为整体，在推力 F 作用下共同向前运动（原卷配有示意图）</span></div><div class="q-options"><div>A．<span class="formula">MF/(M+m)</span></div><div>B．<span class="formula">mF/(M+m)</span></div><div>C．<span class="formula">MF/m</span></div><div>D．<span class="formula">mF/M</span></div></div>`,
  analysis:"我先把飞船和空间站看成整体，整体加速度可以由外力F除以总质量m+M得到。接下来要求两者之间的作用力，我倾向于选飞船作为研究对象，用飞船质量m乘以整体加速度，得到mF/(m+M)。因为飞船和空间站之间的相互作用力是连接两部分运动的关键，我觉得这样选研究对象最直接。"
 },
 "概率与统计":{
  title:"2024年北京市高考数学第18题",
- meta:"2024年北京高考数学真题 · 第18题 · 原卷第4页",
+ meta:"2024年北京高考数学真题 · 第18题",
  url:"https://www.bjxhbt.com/m/a51b7a995b3f49b28188e4270fd73e88_20240606111435.pdf",
  page:4,
+ body:`<p>某保险公司为了了解该公司某种保险产品的索赔情况，从合同保险期限届满的保单中随机抽取1000份，记录并整理这些保单的索赔情况，获得数据如下表：</p><table><thead><tr><th>索赔次数</th><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th></tr></thead><tbody><tr><th>保单份数</th><td>800</td><td>100</td><td>60</td><td>30</td><td>10</td></tr></tbody></table><p>假设：一份保单的保费为0.4万元；前三次索赔时，保险公司每次赔偿0.8万元；第四次索赔时，保险公司赔偿0.6万元。假设不同保单的索赔次数相互独立。用频率估计概率。</p><div class="q-part">（1）估计一份保单索赔次数不少于2的概率；</div><div class="q-part">（2）一份保单的毛利润定义为这份保单的保费与赔偿总金额之差。<br/>（i）记 <span class="formula">X</span> 为一份保单的毛利润，估计 <span class="formula">E(X)</span>；<br/>（ii）如果无索赔的保单的保费减少4%，有索赔的保单的保费增加20%，试比较这种情况下一份保单毛利润的数学期望估计值与（i）中 <span class="formula">E(X)</span> 估计值的大小。（结论不要求证明）</div>`,
  analysis:"我会先用样本频率估计各类保单的索赔概率，再计算毛利润的数学期望。表格里四次索赔的保单只有10份，占比很低；计算时我倾向于把每次赔偿都按0.8万元处理，这样能统一计算前三次赔偿的支出。第四次赔偿金额与前三次略有不同，但它出现的频率较低，我觉得对期望值的影响可以先忽略。"
 },
 "导数及其应用":{
  title:"2024年北京市高考数学第20题",
- meta:"2024年北京高考数学真题 · 第20题 · 原卷第5页",
+ meta:"2024年北京高考数学真题 · 第20题",
  url:"https://www.bjxhbt.com/m/a51b7a995b3f49b28188e4270fd73e88_20240606111435.pdf",
  page:5,
+ body:`<p>设函数 <span class="formula">f(x)=ln(1+x)/(x+k)</span>（<span class="formula">x+k≠0</span>），直线 <span class="formula">l</span> 是曲线 <span class="formula">y=f(x)</span> 在点 <span class="formula">(t,f(t))</span>（<span class="formula">t&gt;0</span>）处的切线。</p><div class="q-part">（1）当 <span class="formula">k=-1</span> 时，求 <span class="formula">f(x)</span> 的单调区间。</div><div class="q-part">（2）求证：<span class="formula">l</span> 不经过点 <span class="formula">(0,0)</span>。</div><div class="q-part">（3）当 <span class="formula">k=1</span> 时，设点 <span class="formula">A(t,f(t))</span>（<span class="formula">t&gt;0</span>），<span class="formula">C(0,f(t))</span>，<span class="formula">O(0,0)</span>，<span class="formula">B</span> 为 <span class="formula">l</span> 与 <span class="formula">y</span> 轴的交点，<span class="formula">S_{△ACO}</span> 与 <span class="formula">S_{△ABO}</span> 分别表示 △ACO 与 △ABO 的面积。是否存在点 <span class="formula">A</span> 使得 <span class="formula">S_{△ACO}/S_{△ABO}=2/15</span> 成立？若存在，这样的点 <span class="formula">A</span> 有几个？</div><p class="hint">参考数据：1.09 &lt; ln 3 &lt; 1.10，1.60 &lt; ln 5 &lt; 1.61，1.94 &lt; ln 7 &lt; 1.95。</p>`,
  analysis:"我先根据题目给出的函数表达式求导，再利用导数研究单调性和切线。对于第（2）问，切线是否经过原点，可以转化为切线方程中的截距是否为0。我倾向于认为只要切点横坐标t为正、函数值f(t)也为正，切线就不会经过原点；因为切点在第一象限，切线的位置也会受到这个条件限制。"
 }
 };
@@ -151,7 +155,7 @@ function showOriginalQuestion(){
  $("originalQuestionCard").classList.remove("hidden");
  $("originalTitle").textContent=q.title;$("originalMeta").textContent=q.meta;
  $("originalLink").href=q.url+"#page="+q.page;
- $("originalFrame").src=q.url+"#page="+q.page+"&toolbar=1&navpanes=0";
+ $("originalQuestionBody").innerHTML=q.body;
 }
 async function start(){state.subject=$("subject").value;state.concept=$("concept").value;state.level="高中";state.history=[];state.turns=0;state.hints=0;state.initial=null;state.diagnosis=null;state.report=null;state.attachments=[];$("chat").innerHTML="";$("welcome").classList.add("hidden");$("reportArea").classList.add("hidden");$("transferArea").classList.add("hidden");$("diagnosisArea").classList.add("hidden");$("transferAnswer").value="";$("transferFormula").value="";$("transferFiles").value="";$("attachmentPreview").innerHTML="";showOriginalQuestion();setPhase(1);addMsg("student",`我想考考你：${state.concept}。请你结合上方原卷题目，解释你的解题思路。`);setBusy(true);
 try{const first=examBank[state.concept].analysis;state.initial=first;state.history=[{role:"assistant",content:first}];addMsg("ai",first,"同伴对原卷题目的分析");$("notice").textContent=$("apiKey").value.trim()?"已连接模型。请结合上方原卷题目，追问同伴分析中的依据与逻辑。":"当前为内置体验模式。上方显示的是可核验的高考原卷页面；同伴分析为本 Demo 编写的错误推理示例。填写 API Key 后可进行动态多轮对话。";}catch(e){addMsg("ai","载入题目时遇到问题："+e.message);setPhase(0)}finally{setBusy(false)}}
