@@ -92,7 +92,17 @@ function addMsg(role,text,tag=""){const row=document.createElement("div");row.cl
 function setBusy(v){state.busy=v;$("sendBtn").disabled=v||state.phase!==1;$("startBtn").disabled=v;$("submitDiagnosis").disabled=v;$("submitTransfer").disabled=v;if(v){$("composerHint").innerHTML='<span class="loading"><span class="dot"></span>同伴正在组织语言…</span>'}else $("composerHint").textContent=state.phase===1?"继续追问，检查它的推理依据。":"当前阶段无需继续提问。"}
 function setPhase(n){state.phase=n;const labels=["阶段一：选择概念，开始挑战","阶段二：诊断性提问","阶段三：定位概念漏洞","阶段四：修正解释","阶段五：独立迁移挑战"];const desc=["先选一个你正在学习的理科概念","通过连续追问检查关键条件、机制或证据","判断它的解释是否存在漏洞","依据科学原理重建正确解释","不依赖 AI，将概念应用到新情境"];$("stageTitle").textContent=labels[n];$("stageDesc").textContent=desc[n];$("statusPill").textContent=["等待开始","对话进行中","等待诊断","修正与反馈","独立完成"][n];[...$("steps").children].forEach((el,i)=>{el.className="step"+(i===n?" active":i<n?" done":"")});$("message").disabled=n!==1;$("sendBtn").disabled=n!==1||state.busy;$("diagnosisArea").classList.toggle("hidden",n!==2);$("transferArea").classList.toggle("hidden",n!==4);$("composer").classList.toggle("hidden",n===0||n>=2);if(n===2)$("notice").textContent="请独立完成诊断。AI 不会替你指出漏洞；如果暂时没有思路，可以回到对话中继续追问。";if(n===4)$("notice").textContent="迁移阶段不提供 AI 提示。请独立完成新情境问题，检验自己是否真正理解。"}
 async function callAI(messages,temperature=.7){const key=$("apiKey").value.trim();if(!key)throw new Error("NO_KEY");const model=$("model").value.trim()||"deepseek-ai/DeepSeek-V3";const res=await fetch(endpoint,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+key},body:JSON.stringify({model,messages,temperature,stream:false})});if(!res.ok){let t=await res.text();throw new Error("模型请求失败（"+res.status+"）："+t.slice(0,260))}const data=await res.json();return data.choices?.[0]?.message?.content||"我刚刚没组织好语言，你能换个方式问问吗？"}
-const systemPrompt=()=>`你是面向${state.level}学生的${state.subject}“装懂同伴”。学习概念：${state.concept}。你的教育目标是让学生通过诊断性提问发现你解释中的概念/推理漏洞。严格遵守：1. 你扮演一个自信但并非真正理解的同学，表达自然、简洁，不要自称AI或老师。2. 初始回答必须包含一道适龄题目、你的答案和看似合理但有一个可诊断的核心错误的推理过程；答案可以碰巧正确，但理由必须有漏洞。3. 漏洞难度适中，只设置一个核心错误，避免故意胡说或多个隐蔽错误。4. 学生追问时先按“装懂同伴”身份回应，不能主动承认错误、直接公布正确答案或直接告诉学生漏洞；可以给出能继续被检验的理由。5. 如果学生连续两次提问都没有触及关键条件/机制/证据，给一个很弱的提示，如“要不要看看题目里还有哪个条件没用上？”；如果学生明确求助或仍无法定位，再逐渐给更具体提示，但仍不直接给答案。6. 不要伪造科学事实。7. 学生提交完整诊断后，后续评价由系统单独处理。只输出自然中文。`;
+const systemPrompt=()=>`你是面向${state.level}学生的${state.subject}“装懂同伴”。当前学习概念：${state.concept}。你必须始终记住并使用本轮最初给出的原题、数据、条件、你的答案和推理过程。
+
+【角色与回答规则】
+1. 你是一个自信、表达自然、但对题目中的一个关键知识点理解有偏差的同学，不是老师，不要自称AI。
+2. 学生每次追问，你都必须先直接回答他问的那个具体问题，再结合原题中的数值、条件、公式、实验现象或推理步骤解释你为什么这样想。严禁只重复“我依据这个概念的规律”“题目条件足够”等空话。
+3. 回答时必须点名原题中的相关信息。例如数学题要谈判别式、根的和与积或具体系数；物理题要谈受力、电路连接或实验数据；化学生物题要谈反应条件、物质变化、变量或遗传关系。
+4. 你要维护自己最初的错误观点，但给出的理由必须具体、可追问，并且逻辑上暴露出漏洞。不要突然承认错误、直接公布正确答案或主动告诉学生漏洞。
+5. 如果学生的问题指出了一个具体反例或推理矛盾，你要尝试解释/辩护，但不能无视他的问题；可以承认“这个情况我还没考虑到”，然后提出一个可检验的解释。
+6. 每次回答通常3—6句，包含针对问题的回应和至少一个原题细节；不要过短，不要堆砌无关定义。
+7. 不要伪造题目中不存在的数据。若原题没有给出某个量，要明确说题目未提供，不要编造。
+8. 学生提交诊断后，后续评价由系统处理。只输出自然中文。`;
 const mockInitial={
 "浮力":"题目：一个体积为100 cm³的物体完全浸没在水中，水的密度为1 g/cm³，取g=10 N/kg。它受到的浮力是多少？\n\n我的答案是1 N。因为物体排开水的质量是0.1 kg，所以排开水的重力是1 N。根据阿基米德原理，浮力等于排开水的重力，因此浮力就是1 N。如果把物体换成密度更大的材料，但体积不变，我觉得浮力也会变大，因为物体自身更重了。",
 "牛顿第二定律":"题目：一个质量为2 kg的物体受到6 N的合力，求它的加速度；如果合力不变、质量变为4 kg，加速度又是多少？\n\n我的答案：第一次加速度是3 m/s²，第二次是6 m/s²。因为质量变成原来的2倍，物体受到的惯性也变大了，所以它需要更大的加速度来保持运动。由F=ma可知，质量越大，加速度也应该越大。",
@@ -112,8 +122,55 @@ try{let first;if($("apiKey").value.trim()){first=await callAI([{role:"system",co
 state.initial=first;state.history=[{role:"assistant",content:first}];addMsg("ai",first,"我来展示一下我的理解");$("notice").textContent=$("apiKey").value.trim()?"已连接模型。注意：你需要通过提问检查同伴的推理，而不是只看最终答案。" :`当前为内置体验模式，已载入“${state.concept}”的完整题目与推理示例。填写硅基流动 Key 后可体验动态生成与个性化多轮对话。`;}catch(e){addMsg("ai","连接模型时遇到问题："+e.message+"。你可以检查 API Key 和模型名称，或清空 Key 使用内置示例。");setPhase(0)}finally{setBusy(false)}}
 async function send(){const msg=$("message").value.trim();if(!msg||state.phase!==1||state.busy)return;$("message").value="";addMsg("student",msg);state.turns++;state.history.push({role:"user",content:msg});setBusy(true);try{let answer;if($("apiKey").value.trim()){answer=await callAI([{role:"system",content:systemPrompt()},...state.history]);}else{answer=mockReply(msg,state.turns)}state.history.push({role:"assistant",content:answer});addMsg("ai",answer);if(state.turns>=1){$("finishChatBtn").classList.remove("hidden");}
 if(state.turns>=2&&state.turns%2===0){$("notice").textContent="想一想：你的问题是否触及了关键条件、概念机制或证据？如果还没有，可以继续追问。"}if(/我认为|漏洞|错误|不对|应该是|因为|原理/.test(msg)&&state.turns>=2){$("notice").textContent="你似乎开始检验它的解释了。可以继续追问，也可以点击“我准备好诊断了”进入下一步。";$("composerHint").textContent="当你认为已经找到问题时，点击下方按钮提交诊断。";$("finishChatBtn").classList.remove("hidden");}}catch(e){addMsg("ai","这次没有成功回复："+e.message+"。请检查网络、Key 或模型名称后重试。")}finally{setBusy(false)}}
-function mockReply(msg,turn){if(/为什么|依据|怎么知道|根据什么|条件|原理|证据/.test(msg)){return turn===1?`我主要依据的是我刚才提到的关于“${state.concept}”的规律。我觉得题目给出的条件已经足够支持这个判断了。`:`我还是认为我的推理成立。这个概念里最关键的就是我刚才说的那个规律，其他条件应该不会改变结论。`;}return turn===1?`我感觉我的解释没问题呀，关于“${state.concept}”的基本规律我记得很清楚。你是不是想问我为什么这么判断？`:`这个概念我平时就是这样理解的。你可以再具体一点问我，比如我的推理用了哪个条件？`; }
-async function submitDiagnosis(){const error=$("errorText").value.trim(),reason=$("reasonText").value.trim(),repair=$("repairText").value.trim();if(!error||!reason||!repair){$("notice").textContent="请尽量完成三个部分：指出漏洞、解释原因、给出正确解释。";return}state.diagnosis={error,reason,repair};addMsg("student","我的诊断：\n漏洞："+error+"\n原因："+reason+"\n正确解释："+repair);setBusy(true);try{let feedback;if($("apiKey").value.trim()){feedback=await callAI([{role:"system",content:`你是严谨、鼓励性的${state.subject}学习评价者。学生学习概念${state.concept}。根据对话和学生诊断，分别评价三个维度：诊断性问题、错误识别、科学解释。每项给0-4分并说明理由；指出遗漏或不准确之处；给出准确的概念核对说明。不要夸大分数。最后给出一道全新的迁移题（不要给答案），适合${state.level}。格式清晰，中文。`},{role:"user",content:`同伴初始解释：${state.initial}\n对话记录：${JSON.stringify(state.history)}\n学生诊断：${JSON.stringify(state.diagnosis)}\n请评价并给出迁移题。`}]);}else{feedback=`诊断反馈（内置体验模式）\n\n你已经完成了对“${state.concept}”的漏洞识别与解释修正。当前未连接模型，系统无法根据你的具体回答进行自动评分。请对照教材或教师提供的标准解释，检查你是否准确指出了概念漏洞、说明了错误原因，并使用正确原理完成修正。\n\n接下来请在迁移题中独立运用“${state.concept}”这一概念。`;}addMsg("ai",feedback,"诊断反馈");state.report=feedback;const transferQuestions={"浮力":"两个体积相同的实心球完全浸没在同一种液体中，一个铁球、一个铝球，浮力是否相同？为什么？","牛顿第二定律":"两个物体受到相同合力，甲的质量是乙的2倍，比较它们的加速度。","串联与并联电路":"两个不同电阻的灯泡并联，它们两端电压是否相等？","质量守恒定律":"敞口容器中碳酸钙与盐酸反应后质量减少，是否违背质量守恒？","酸碱中和反应":"向过量氢氧化钠中加入少量盐酸，反应后溶液一定中性吗？","溶解度":"饱和食盐水升高温度后，溶解情况一定不变吗？","光合作用":"植物处于黑暗中还会进行细胞呼吸吗？","细胞呼吸":"萌发种子在黑暗中生长，能量从哪里来？","显性与隐性遗传":"两个Aa个体杂交，后代出现aa的概率是多少？","一次函数":"函数y=-3x+4与y轴交于哪一点？是否经过原点？","一元二次方程":"方程x²+x-6=0的两个根符号相同还是相反？","相似三角形":"相似比为2:3的两个三角形，面积比是多少？"};const q=transferQuestions[state.concept]||"请举例说明该概念的应用并解释依据。";state.transfer=q;$("transferQuestion").textContent=q;setPhase(4);$("notice").textContent="反馈已生成。现在请独立完成迁移题，不要依赖 AI 提示。";}catch(e){addMsg("ai","评价请求失败："+e.message+"。请重试提交。");}finally{setBusy(false)}}
+function mockReply(msg,turn){
+ const q=msg;
+ const replies={
+ "一元二次方程":()=>{
+  if(/判别式|delta|Δ|不等实数根|两个实根/.test(q))return "我这里把两个判断连在了一起：Δ>0确实能说明方程有两个不相等的实数根。我进一步认为它们都是正数，是因为我看这道方程x²-5x+6=0时，两个根刚好是2和3，而且一次项系数是负的，所以我觉得只要判别式大于0，根就会像这道题一样都在0的右边。";
+  if(/和|积|韦达|符号|正根|负根/.test(q))return "我没有单独检查根的和与积。我主要是从方程x²-5x+6=0的系数来判断：一次项系数是-5，常数项是6，我把它们和这道题算出的2、3联系起来，觉得根应该都是正的。不过我认为判别式大于0是最关键的，因为它保证了有两个实数根。";
+  return "就拿原题x²-5x+6=0来说，我先算出Δ=(-5)²-4×1×6=1，大于0，所以有两个不同实根；再结合这道题的系数，我判断它们是2和3。我把这个例子推广到了所有Δ>0的方程，觉得两个根都会是正数。";
+ },
+ "牛顿第二定律":()=>{
+  if(/质量|加速度|4\s*kg|2\s*kg|6\s*n|合力/.test(q))return "原题里合力保持6 N，质量从2 kg变成4 kg。我认为质量变大后惯性也变大，物体需要更大的加速度才能改变原来的运动状态，所以我把加速度也按质量的倍数放大了。我的判断主要是把“惯性更大”理解成“加速度更大”，而没有重新比较合力与质量的比值。";
+  return "我说的是原题给出的6 N合力和2 kg质量。第一次我用6÷2得到3 m/s²；质量变成4 kg后，我觉得物体惯性更大，因此加速度也应该更大。我认为合力没变并不意味着加速度一定减小，因为质量本身也影响运动状态变化。";
+ },
+ "浮力":()=> "我指的是原题中物体排开水的体积是100 cm³。阿基米德原理里浮力等于排开液体的重力，所以我先用水的密度和排开体积算出1 N。至于换成密度更大的材料，我认为物体更重会让它对水产生更大的作用，因此浮力也会增加；我没有把“排开液体的体积是否变化”单独考虑进去。",
+ "串联与并联电路":()=> "原题说的是两个灯泡串联，而且电流表分别放在第一个灯泡前和两个灯泡之间。因为串联电路只有一条通路，我认为两处电流表读数应该相同；但我又把灯泡消耗电能理解成电流逐渐减少，所以觉得后一个灯泡中的电流会变小。这里我依据的是灯泡会发光、会消耗电能这个现象。",
+ "质量守恒定律":()=> "原题特别说的是碳酸钙和盐酸反应，会生成二氧化碳。我认为如果在敞口容器中称量，二氧化碳逸出后天平读数会变小，所以我把“测得的装置质量减少”理解成“反应前后总质量减少”。我没有把逸出的气体也作为生成物纳入整个反应体系。",
+ "酸碱中和反应":()=> "原题是向氢氧化钠溶液中加入少量盐酸。我认为酸和碱一旦发生中和，就会生成盐和水，因此溶液会变成中性。我的判断重点是看到了中和反应发生，却没有继续比较盐酸和氢氧化钠的物质的量，也没有判断反应物是否有剩余。",
+ "溶解度":()=> "原题限定温度不变，而且溶液已经饱和。我认为搅拌能让固体和水接触得更充分，原来没溶解的部分就会继续溶解；我把溶解快慢和一定温度下最多能溶解多少混在一起了，所以认为搅拌能提高溶解度。",
+ "光合作用":()=> "原题说植物夜晚处于黑暗中。因为没有光，光反应无法进行，光合作用速率会下降甚至停止。我把光合作用停止进一步理解成植物夜间不再进行任何与能量有关的过程，所以判断呼吸作用也停止了；我没有区分光合作用和细胞呼吸对光照条件的不同要求。",
+ "细胞呼吸":()=> "原题中的种子在黑暗中萌发，没有光照。我认为植物主要通过光合作用获得有机物和能量，黑暗中光合作用不能进行，所以种子不能获得能量。我没有考虑种子自身储存的有机物，也没有把分解有机物释放能量的过程和制造有机物的过程区分开。",
+ "显性与隐性遗传":()=> "原题中A是显性、a是隐性，所以Aa表现显性性状，这一点我比较确定。我进一步认为显性性状在人群中更常见，是因为一个显性等位基因就能表现出来，因此它传递的机会似乎更大。我没有区分“显隐性关系”和“某种等位基因在群体中的频率”。",
+ "一次函数":()=> "原题函数是y=2x+1。当x=0时，y=1，所以交点是(0,1)。我仍然觉得它会经过原点，因为一次函数图像是一条直线，而我把“直线”与“经过原点”联系起来了；我没有把原点(0,0)代入原函数检验。",
+ "相似三角形":()=> "原题说两个三角形的对应角分别相等，所以我判断它们相似。相似意味着形状相同，我就进一步把它理解成大小也相同，因此认为对应边长度相等。我没有区分对应边成比例和对应边相等这两个条件。",
+ };
+ const fn=replies[state.concept];
+ if(fn)return fn();
+ return `回到刚才那道关于“${state.concept}”的题目，我当时是根据题目给出的条件“${state.initial.slice(0,90)}”作出判断的。你问的这个问题涉及我推理中的关键一步：我把题目中的这个条件理解成了支持原结论的依据。我的理解是，题目给出的信息已经足以让我这样判断；如果你认为不成立，可以指出具体哪一个条件不能推出我的结论。`;
+}
+async function submitDiagnosis(){const error=$("errorText").value.trim(),reason=$("reasonText").value.trim(),repair=$("repairText").value.trim();if(!error||!reason||!repair){$("notice").textContent="请尽量完成三个部分：指出漏洞、解释原因、给出正确解释。";return}state.diagnosis={error,reason,repair};addMsg("student","我的诊断：\n漏洞："+error+"\n原因："+reason+"\n正确解释："+repair);setBusy(true);try{let feedback;if($("apiKey").value.trim()){feedback=await callAI([{role:"system",content:`你是严谨、鼓励性的${state.subject}学习评价者。学生学习概念${state.concept}。根据对话和学生诊断，分别评价三个维度：诊断性问题、错误识别、科学解释。每项给0-4分并说明理由；指出遗漏或不准确之处；给出准确的概念核对说明。不要夸大分数。最后给出一道全新的迁移题（不要给答案），适合${state.level}。格式清晰，中文。`},{role:"user",content:`同伴初始解释：${state.initial}\n对话记录：${JSON.stringify(state.history)}\n学生诊断：${JSON.stringify(state.diagnosis)}\n请评价并给出迁移题。`}]);}else{feedback=`诊断反馈（内置体验模式）\n\n你已经完成了对“${state.concept}”的漏洞识别与解释修正。当前未连接模型，系统无法根据你的具体回答进行自动评分。请对照教材或教师提供的标准解释，检查你是否准确指出了概念漏洞、说明了错误原因，并使用正确原理完成修正。\n\n接下来请在迁移题中独立运用“${state.concept}”这一概念。`;}addMsg("ai",feedback,"诊断反馈");state.report=feedback;const transferBank={
+"浮力":{medium:"一艘底面积为0.02 m²的圆柱形容器中装有0.20 m深的水。将一块质量为0.6 kg、体积为800 cm³的物块轻轻放入水中，物块静止后漂浮。求物块受到的浮力、排开水的体积以及露出水面的体积；若再向水中缓慢加入盐并充分溶解，物块露出液面的体积如何变化？说明理由。",hard:"某实验小组用弹簧测力计、溢水杯和两个不同材料的实心物块探究浮力。物块A重4.8 N，完全浸没在水中时测力计示数为3.2 N；物块B体积与A相同，完全浸没在密度为1.2×10³ kg/m³的液体中时测力计示数为2.4 N。求两物块在对应液体中受到的浮力，并判断能否仅凭这些数据比较两物块的密度。若将A从水中缓慢提出，测力计示数如何变化？写出分析依据。"},
+"牛顿第二定律":{medium:"质量为2 kg的物块放在水平地面上，受到水平向右10 N的拉力，物块与地面间的动摩擦因数为0.2，取g=10 N/kg。求物块的加速度；若拉力增大到14 N，加速度如何变化？请说明摩擦力是否随拉力同步增大。",hard:"两个质量分别为m和2m的物块A、B叠放在光滑水平地面上，A与B间动摩擦因数为μ。现对下方B施加水平拉力F，使两物块一起向右做匀加速运动。求系统加速度，并分析A恰好不相对B滑动时F的最大值。若改为对上方A施加同样大小的拉力，系统运动情况是否相同？说明受力分析依据。"},
+"串联与并联电路":{medium:"电源电压保持6 V，两个电阻R1=10 Ω、R2=20 Ω。先将它们串联，再改为并联，分别求总电阻和干路电流，并比较两种连接方式中R1两端的电压。",hard:"电源电压恒为12 V，R1=20 Ω，滑动变阻器最大阻值为40 Ω。R1与滑动变阻器串联，电压表测R1两端电压，电流表测电路电流。闭合开关后移动滑片，要求判断电流表示数、电压表示数和R1功率如何变化；若将电压表改接在滑动变阻器两端，分析两电压表示数变化量之间的关系，并说明依据。"},
+"质量守恒定律":{medium:"将10.0 g碳酸钙与足量稀盐酸放入敞口烧杯中，充分反应后称得剩余物质总质量为105.6 g；反应前烧杯和稀盐酸总质量为100.0 g。判断该数据是否能直接说明质量守恒定律不成立，并计算生成二氧化碳的质量。",hard:"某小组分别用敞口烧杯和带气球的密闭锥形瓶进行碳酸钠与稀盐酸反应的实验。两组实验均发现反应后称量值与反应前不同。请分析两种装置中可能造成测量差异的原因，设计一套能验证质量守恒定律的改进方案，并说明气球、橡胶塞及称量范围分别应满足什么要求。"},
+"酸碱中和反应":{medium:"向20.0 g溶质质量分数为4.0%的NaOH溶液中，逐滴加入稀盐酸。已知NaOH与HCl恰好完全反应时二者物质的量之比为1:1。计算NaOH的物质的量，并判断加入盐酸不足量、恰好足量和过量时溶液分别呈什么酸碱性。",hard:"某实验小组用pH传感器记录向一定量NaOH溶液中逐滴加入稀盐酸的pH变化曲线。曲线起点pH=13，滴加至V1时pH=7，继续滴加至V2时pH=2。请判断V1前、V1时、V1至V2阶段溶液中的主要溶质；解释pH变化趋势；若改用等浓度但体积更大的NaOH溶液，分析恰好中和所需盐酸体积如何变化。"},
+"溶解度":{medium:"20 ℃时，某物质的溶解度为36 g。将40 g该物质加入100 g水中，充分搅拌后静置，求所得溶液的质量及是否饱和；若升温后溶解度增至50 g，最多还能溶解多少该物质？",hard:"甲、乙两种固体物质的溶解度曲线在40 ℃相交。甲的溶解度随温度升高显著增大，乙变化较小。现有含少量乙的甲固体混合物，设计从混合物中获得较纯甲晶体的操作步骤，并解释每一步的目的；若母液不蒸发而直接降温，分析晶体析出量及纯度可能受到什么影响。"},
+"光合作用":{medium:"某植物在光照强度为a时，光合速率与呼吸速率相等；光照强度增加到b后，净光合速率不再增加。请解释a点和b点的生理含义，并判断在a点时植物是否有有机物积累。",hard:"研究人员测定两种植物在不同光照强度下的净光合速率，并在相同温度下测得黑暗中的CO₂释放速率。植物甲的光补偿点低于植物乙，但最大净光合速率也低于乙。请分析两种植物在弱光和强光环境中的生长优势；若适当提高环境CO₂浓度，判断光补偿点、光饱和点及净光合速率可能如何变化，并说明判断所需的限制条件。"},
+"细胞呼吸":{medium:"将等量萌发种子分别放在有氧和无氧条件下培养，测得有氧组消耗O₂并释放CO₂，无氧组不消耗O₂但也释放CO₂。解释两组细胞呼吸方式，并比较单位质量葡萄糖释放能量的差异。",hard:"某研究小组用密闭装置测定萌发种子的呼吸作用：实验开始时装置内有足量氧气，随着时间延长，气体体积逐渐变化。设计实验区分种子有氧呼吸产生的CO₂与消耗的O₂，并说明为什么需要设置等量煮沸种子的对照组；若实验后期氧气耗尽，种子的呼吸方式可能发生什么变化？"},
+"显性与隐性遗传":{medium:"某植物高茎D对矮茎d为显性。两株高茎植株杂交，后代出现矮茎。写出亲本可能的基因型，并计算后代中矮茎个体所占比例。",hard:"某遗传病由一对等位基因控制，正常等位基因A对致病等位基因a为显性。一对表现正常的夫妇生出患病孩子。请判断该病的遗传方式最可能是什么、父母基因型是什么；若他们再生一个孩子，患病概率是多少？并说明为什么“显性”不能直接推出该等位基因在人群中的频率更高。"},
+"一次函数":{medium:"一次函数y=kx+b的图像经过A(−2,5)和B(4,−1)。求函数表达式、与坐标轴交点，并判断当x为何值时y>0。",hard:"某水箱原有一定水量，打开水龙头后每分钟注入相同体积的水。记录第2分钟和第7分钟水量分别为34 L和59 L。建立水量y与时间x的一次函数关系，求水箱初始水量；若水箱最多容纳80 L，求注水多久会满，并解释函数定义域为什么不能无限延伸。"},
+"一元二次方程":{medium:"已知关于x的一元二次方程x²−(m+1)x+m=0。求判别式，并判断方程是否总有实数根；再讨论两个根是否一定为正数。",hard:"已知关于x的一元二次方程x²−(k+2)x+2k=0有两个正实数根。求k的取值范围，并说明仅凭判别式大于0为什么不足以保证两个根都为正；请结合根的和、根的积与判别式完成分类讨论。"},
+"相似三角形":{medium:"在△ABC中，DE∥BC，D在AB上，E在AC上。已知AD=3，DB=2，AE=4.5，求EC，并求△ADE与△ABC的面积比。",hard:"在△ABC中，D在AB上，E在AC上，连接DE。已知∠ADE=∠ACB，AD=4，AB=10，AC=8。证明△ADE与△ACB相似，并求AE；再比较△ADE与四边形DBCE的面积，说明相似比与面积比之间的关系。"}
+};
+const diagnosticText=(state.diagnosis.error+" "+state.diagnosis.reason+" "+state.diagnosis.repair).toLowerCase();
+const weakDiagnosis=state.diagnosis.reason.length<35||state.diagnosis.repair.length<35;
+const difficulty=weakDiagnosis?"medium":"hard";
+const transferItem=transferBank[state.concept]||{medium:"请结合一个实际情境解释该概念，并完成必要计算。",hard:"请设计一个包含多项条件的实际问题，运用该概念完成分析、计算并解释结论。"};
+const q=transferItem[difficulty];
+state.transfer=q;
+$("transferQuestion").textContent=(difficulty==="hard"?"综合迁移题 · 中高难度\n":"进阶迁移题 · 中等难度\n")+q;
+setPhase(4);$("notice").textContent="反馈已生成。现在请独立完成迁移题，不要依赖 AI 提示。";}catch(e){addMsg("ai","评价请求失败："+e.message+"。请重试提交。");}finally{setBusy(false)}}
 async function submitTransfer(){const ans=$("transferAnswer").value.trim();if(!ans){$("notice").textContent="请先写下你的独立答案和推理依据。";return}addMsg("student","我的独立迁移答案："+ans);setBusy(true);try{let final;if($("apiKey").value.trim()){final=await callAI([{role:"system",content:`你是${state.subject}教师。请评价学生对${state.concept}的独立迁移答案。此阶段原本不提供提示，现在学生已提交答案，可以给反馈。分别按概念理解、逻辑推理、复杂情境迁移三个维度各评0-4分，解释理由，指出正确之处与需改进之处，给出准确参考解释。最后简短总结。`},{role:"user",content:`迁移题：${state.transfer}\n学生答案：${ans}\n此前诊断：${JSON.stringify(state.diagnosis)}`}]);}else{final="你已完成独立迁移作答。内置体验模式不进行自动评分；请对照教材或教师提供的标准解释，检查自己是否准确使用了概念、推理是否完整，以及是否能将规律迁移到新情境。"}addMsg("ai",final,"独立迁移反馈");$("reportArea").classList.remove("hidden");$("reportArea").innerHTML="<h3>本轮学习完成</h3><p>你经历了诊断性提问、错误识别、解释修正和独立迁移四个关键学习活动。</p><div class='rubric'><div class='score'><b>3 项</b><span>过程表现维度</span></div><div class='score'><b>3 项</b><span>独立迁移维度</span></div><div class='score'><b>1 次</b><span>独立迁移挑战</span></div></div><p style='margin-top:12px;white-space:pre-wrap'>"+escapeHtml(final)+"</p><button class='btn secondary' style='margin-top:12px' onclick='window.print()'>打印本轮记录</button>";setPhase(5);$("notice").textContent="本轮结束。建议回顾：哪些问题最有效？你最初是否也存在与同伴相似的理解偏差？";}catch(e){addMsg("ai","迁移评价失败："+e.message)}finally{setBusy(false)}}
 function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 const concepts={"物理":["浮力","牛顿第二定律","串联与并联电路"],"化学":["质量守恒定律","酸碱中和反应","溶解度"],"生物":["光合作用","细胞呼吸","显性与隐性遗传"],"数学":["一次函数","一元二次方程","相似三角形"]};
