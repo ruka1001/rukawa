@@ -182,15 +182,7 @@ const focusHits=(focusTerms[state.concept]||[]).filter(term=>diagnosticText.incl
 const weakDiagnosis=state.diagnosis.reason.length<35||state.diagnosis.repair.length<35||focusHits===0;
 let difficulty=weakDiagnosis?"medium":"hard";
 let q=transferBank[state.concept]?.[difficulty]||"请结合一个实际情境解释该概念，并完成必要计算。";
-if($("apiKey").value.trim()){
- try{
-  q=await callAI([
-   {role:"system",content:`你是严谨的${state.subject}命题教师。请为${state.level}学生设计一道${state.concept}的中等偏难或较难迁移题。题目应参考真实中高考的命题风格：综合多个条件，要求推理、计算、读图/实验分析或实际情境迁移，不能只是定义回忆或直接代公式。必须针对学生本轮诊断中的具体错误设计，考查他是否真正修正了该误解。给出完整、可作答的题干和必要数据，不要给答案、提示或解题步骤。只输出题目。`},
-   {role:"user",content:`本轮原题：${state.initial}\n学生指出的漏洞：${state.diagnosis.error}\n学生解释的错误原因：${state.diagnosis.reason}\n学生给出的修正：${state.diagnosis.repair}\n请设计一道全新的情境题，避免重复原题数字和问法。`}
-  ],.65);
-  difficulty="personalized";
- }catch(e){/* API生成失败时使用本地题库 */}
-}
+
 state.transfer=q;
 $("transferQuestion").textContent=(difficulty==="hard"?"综合迁移题 · 中高难度\n":difficulty==="personalized"?"个性化迁移题 · 根据本轮诊断生成\n":"进阶迁移题 · 中等难度\n")+q;
 
