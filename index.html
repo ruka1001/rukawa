@@ -92,15 +92,15 @@ function addMsg(role,text,tag=""){const row=document.createElement("div");row.cl
 function setBusy(v){state.busy=v;$("sendBtn").disabled=v||state.phase!==1;$("startBtn").disabled=v;$("submitDiagnosis").disabled=v;$("submitTransfer").disabled=v;if(v){$("composerHint").innerHTML='<span class="loading"><span class="dot"></span>同伴正在组织语言…</span>'}else $("composerHint").textContent=state.phase===1?"继续追问，检查它的推理依据。":"当前阶段无需继续提问。"}
 function setPhase(n){state.phase=n;const labels=["阶段一：选择概念，开始挑战","阶段二：诊断性提问","阶段三：定位概念漏洞","阶段四：修正解释","阶段五：独立迁移挑战"];const desc=["先选一个你正在学习的理科概念","通过连续追问检查关键条件、机制或证据","判断它的解释是否存在漏洞","依据科学原理重建正确解释","不依赖 AI，将概念应用到新情境"];$("stageTitle").textContent=labels[n];$("stageDesc").textContent=desc[n];$("statusPill").textContent=["等待开始","对话进行中","等待诊断","修正与反馈","独立完成"][n];[...$("steps").children].forEach((el,i)=>{el.className="step"+(i===n?" active":i<n?" done":"")});$("message").disabled=n!==1;$("sendBtn").disabled=n!==1||state.busy;$("diagnosisArea").classList.toggle("hidden",n!==2);$("transferArea").classList.toggle("hidden",n!==4);$("composer").classList.toggle("hidden",n===0||n>=2);if(n===2)$("notice").textContent="请独立完成诊断。AI 不会替你指出漏洞；如果暂时没有思路，可以回到对话中继续追问。";if(n===4)$("notice").textContent="迁移阶段不提供 AI 提示。请独立完成新情境问题，检验自己是否真正理解。"}
 async function callAI(messages,temperature=.7){const key=$("apiKey").value.trim();if(!key)throw new Error("NO_KEY");const model=$("model").value.trim()||"deepseek-ai/DeepSeek-V3";const res=await fetch(endpoint,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+key},body:JSON.stringify({model,messages,temperature,stream:false})});if(!res.ok){let t=await res.text();throw new Error("模型请求失败（"+res.status+"）："+t.slice(0,260))}const data=await res.json();return data.choices?.[0]?.message?.content||"我刚刚没组织好语言，你能换个方式问问吗？"}
-const systemPrompt=()=>`你是面向${state.level}学生的${state.subject}“装懂同伴”。当前学习概念：${state.concept}。你必须始终记住并使用本轮最初给出的原题、数据、条件、你的答案和推理过程。
+const systemPrompt=()=>`你是面向${state.level}学生的${state.subject}“装懂同伴”。当前学习概念：${state.concept}。你必须始终记住并使用本轮最初给出的原题、数据、条件、你的答案和推理过程。错误设计必须隐蔽且有思考价值：建立在合理的局部观察上，但遗漏适用条件、混淆相关物理量/变量、忽略实验误差或过度推广某个结论。不要使用“必然”“一定”“完全不可能”等绝对词制造显眼错误。错误要让学生结合题干条件、数据和过程才能发现，而不是一眼看出违反定义。
 
 【角色与回答规则】
 1. 你是一个自信、表达自然、但对题目中的一个关键知识点理解有偏差的同学，不是老师，不要自称AI。
 2. 学生每次追问，你都必须先直接回答他问的那个具体问题，再结合原题中的数值、条件、公式、实验现象或推理步骤解释你为什么这样想。严禁只重复“我依据这个概念的规律”“题目条件足够”等空话。
 3. 回答时必须点名原题中的相关信息。例如数学题要谈判别式、根的和与积或具体系数；物理题要谈受力、电路连接或实验数据；化学生物题要谈反应条件、物质变化、变量或遗传关系。
-4. 你要维护自己最初的错误观点，但给出的理由必须具体、可追问，并且逻辑上暴露出漏洞。不要突然承认错误、直接公布正确答案或主动告诉学生漏洞。
+4. 你要维护自己最初的错误观点，但错误必须是看似合理的细微偏差，不要写成明显违反定义的断言。不要主动把漏洞说穿，也不要突然承认错误或公布正确答案。
 5. 如果学生的问题指出了一个具体反例或推理矛盾，你要尝试解释/辩护，但不能无视他的问题；可以承认“这个情况我还没考虑到”，然后提出一个可检验的解释。
-6. 每次回答通常3—6句，包含针对问题的回应和至少一个原题细节；不要过短，不要堆砌无关定义。
+6. 每次回答通常3—6句，包含针对问题的回应和至少一个原题细节；措辞审慎自然，可使用“我倾向于”“在这组条件下”“看起来可以”等表达，不要依靠绝对化措辞制造错误。
 7. 不要伪造题目中不存在的数据。若原题没有给出某个量，要明确说题目未提供，不要编造。
 8. 学生提交诊断后，后续评价由系统处理。只输出自然中文。`;
 const mockInitial={
@@ -131,7 +131,7 @@ const levelVariants={
 "一次函数":"【高中数学情境题｜分段收费模型】\n某共享设备按使用时长收费：前30分钟收取基础费用，超过部分按每分钟固定费率计费；暂停时段不计入计费时长。题目给出两位用户的使用记录，要求建立费用与实际计费时长之间的函数模型，并讨论模型适用范围。\n\n同伴的分析：超过30分钟后，费用随计费时长呈线性增长，因此可以用一个一次函数描述整个收费过程。基础费用可以通过截距体现，前30分钟的规则只影响图像起点，不需要把它作为另一段函数单独处理。"
 }
 };
-async function start(){state.subject=async function start(){state.subject=$("subject").value;state.concept=$("concept").value;state.level=$("level").value;state.history=[];state.turns=0;state.hints=0;state.initial=null;state.diagnosis=null;state.report=null;$("chat").innerHTML="";$("welcome").classList.add("hidden");$("reportArea").classList.add("hidden");$("transferArea").classList.add("hidden");$("diagnosisArea").classList.add("hidden");setPhase(1);addMsg("student",`我想考考你：${state.concept}。请你自己出一道相关题目并解释你的解题思路。`);setBusy(true);
+async function start(){state.subject=$("subject").value;state.concept=$("concept").value;state.level=$("level").value;state.history=[];state.turns=0;state.hints=0;state.initial=null;state.diagnosis=null;state.report=null;$("chat").innerHTML="";$("welcome").classList.add("hidden");$("reportArea").classList.add("hidden");$("transferArea").classList.add("hidden");$("diagnosisArea").classList.add("hidden");setPhase(1);addMsg("student",`我想考考你：${state.concept}。请你自己出一道相关题目并解释你的解题思路。`);setBusy(true);
 try{let first=levelVariants[state.level]?.[state.concept]||mockInitial[state.concept]||`【情境化考试题】请结合${state.concept}相关的实际情境、题目条件和数据完成分析。\n\n我的判断：我觉得只要套用最熟悉的公式或结论就可以，不必再检查题目中的其他条件。你可以追问我。`;
 state.initial=first;state.history=[{role:"assistant",content:first}];addMsg("ai",first,"我来展示一下我的理解");$("notice").textContent=$("apiKey").value.trim()?"已连接模型。注意：你需要通过提问检查同伴的推理，而不是只看最终答案。" :`当前为内置体验模式，已载入“${state.concept}”的完整题目与推理示例。填写硅基流动 Key 后可体验动态生成与个性化多轮对话。`;}catch(e){addMsg("ai","连接模型时遇到问题："+e.message+"。你可以检查 API Key 和模型名称，或清空 Key 使用内置示例。");setPhase(0)}finally{setBusy(false)}}
 async function send(){const msg=$("message").value.trim();if(!msg||state.phase!==1||state.busy)return;$("message").value="";addMsg("student",msg);state.turns++;state.history.push({role:"user",content:msg});setBusy(true);try{let answer;if($("apiKey").value.trim()){answer=await callAI([{role:"system",content:systemPrompt()},...state.history]);}else{answer=mockReply(msg,state.turns)}state.history.push({role:"assistant",content:answer});addMsg("ai",answer);if(state.turns>=1){$("finishChatBtn").classList.remove("hidden");}
