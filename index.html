@@ -149,8 +149,9 @@ function mockReply(msg,turn){
  if(fn)return fn();
  return `回到刚才那道关于“${state.concept}”的题目，我当时是根据题目给出的条件“${state.initial.slice(0,90)}”作出判断的。你问的这个问题涉及我推理中的关键一步：我把题目中的这个条件理解成了支持原结论的依据。我的理解是，题目给出的信息已经足以让我这样判断；如果你认为不成立，可以指出具体哪一个条件不能推出我的结论。`;
 }
-async function submitDiagnosis(){const error=$("errorText").value.trim(),reason=$("reasonText").value.trim(),repair=$("repairText").value.trim();if(!error||!reason||!repair){$("notice").textContent="请尽量完成三个部分：指出漏洞、解释原因、给出正确解释。";return}state.diagnosis={error,reason,repair};addMsg("student","我的诊断：\n漏洞："+error+"\n原因："+reason+"\n正确解释："+repair);setBusy(true);try{let feedback;if($("apiKey").value.trim()){feedback=await callAI([{role:"system",content:`你是严谨、鼓励性的${state.subject}学习评价者。学生学习概念${state.concept}。根据对话和学生诊断，分别评价三个维度：诊断性问题、错误识别、科学解释。每项给0-4分并说明理由；指出遗漏或不准确之处；给出准确的概念核对说明。不要夸大分数。最后给出一道全新的迁移题（不要给答案），适合${state.level}。格式清晰，中文。`},{role:"user",content:`同伴初始解释：${state.initial}\n对话记录：${JSON.stringify(state.history)}\n学生诊断：${JSON.stringify(state.diagnosis)}\n请评价并给出迁移题。`}]);}else{feedback=`诊断反馈（内置体验模式）\n\n你已经完成了对“${state.concept}”的漏洞识别与解释修正。当前未连接模型，系统无法根据你的具体回答进行自动评分。请对照教材或教师提供的标准解释，检查你是否准确指出了概念漏洞、说明了错误原因，并使用正确原理完成修正。\n\n接下来请在迁移题中独立运用“${state.concept}”这一概念。`;}addMsg("ai",feedback,"诊断反馈");state.report=feedback;const transferBank={
-"浮力":{medium:"一艘底面积为0.02 m²的圆柱形容器中装有0.20 m深的水。将一块质量为0.6 kg、体积为800 cm³的物块轻轻放入水中，物块静止后漂浮。求物块受到的浮力、排开水的体积以及露出水面的体积；若再向水中缓慢加入盐并充分溶解，物块露出液面的体积如何变化？说明理由。",hard:"某实验小组用弹簧测力计、溢水杯和两个不同材料的实心物块探究浮力。物块A重4.8 N，完全浸没在水中时测力计示数为3.2 N；物块B体积与A相同，完全浸没在密度为1.2×10³ kg/m³的液体中时测力计示数为2.4 N。求两物块在对应液体中受到的浮力，并判断能否仅凭这些数据比较两物块的密度。若将A从水中缓慢提出，测力计示数如何变化？写出分析依据。"},
+async function submitDiagnosis(){const error=$("errorText").value.trim(),reason=$("reasonText").value.trim(),repair=$("repairText").value.trim();if(!error||!reason||!repair){$("notice").textContent="请尽量完成三个部分：指出漏洞、解释原因、给出正确解释。";return}state.diagnosis={error,reason,repair};addMsg("student","我的诊断：\n漏洞："+error+"\n原因："+reason+"\n正确解释："+repair);setBusy(true);try{let feedback;if($("apiKey").value.trim()){feedback=await callAI([{role:"system",content:`你是严谨、鼓励性的${state.subject}学习评价者。学生学习概念${state.concept}。根据对话和学生诊断，分别评价三个维度：诊断性问题、错误识别、科学解释。每项给0-4分并说明理由；指出遗漏或不准确之处；给出准确的概念核对说明。不要夸大分数。最后给出一道全新的迁移题（不要给答案），适合${state.level}。格式清晰，中文。`},{role:"user",content:`同伴初始解释：${state.initial}\n对话记录：${JSON.stringify(state.history)}\n学生诊断：${JSON.stringify(state.diagnosis)}\n请评价并给出迁移题。`}]);}else{feedback=`诊断反馈（内置体验模式）\n\n你已经完成了对“${state.concept}”的漏洞识别与解释修正。当前未连接模型，系统无法根据你的具体回答进行自动评分。请对照教材或教师提供的标准解释，检查你是否准确指出了概念漏洞、说明了错误原因，并使用正确原理完成修正。\n\n接下来请在迁移题中独立运用“${state.concept}”这一概念。`;}addMsg("ai",feedback,"诊断反馈");state.report=feedback;
+const transferBank={
+"浮力":{medium:"一艘底面积为0.02 m²的圆柱形容器中装有0.20 m深的水。将一块质量为0.6 kg、体积为800 cm³的物块轻轻放入水中，物块静止后漂浮。求物块受到的浮力、排开水的体积以及露出水面的体积；若再向水中缓慢加入盐并充分溶解，物块露出液面的体积如何变化？说明理由。",hard:"某实验小组用弹簧测力计、溢水杯和两个不同材料的实心物块探究浮力。物块A重4.8 N，完全浸没在水中时测力计示数为3.2 N；物块B重4.8 N、体积与A相同，完全浸没在密度为1.2×10³ kg/m³的液体中时测力计示数为2.4 N。求两物块在对应液体中受到的浮力，并判断能否仅凭这些数据比较两物块的密度。若将A从水中缓慢提出，测力计示数如何变化？写出分析依据。"},
 "牛顿第二定律":{medium:"质量为2 kg的物块放在水平地面上，受到水平向右10 N的拉力，物块与地面间的动摩擦因数为0.2，取g=10 N/kg。求物块的加速度；若拉力增大到14 N，加速度如何变化？请说明摩擦力是否随拉力同步增大。",hard:"两个质量分别为m和2m的物块A、B叠放在光滑水平地面上，A与B间动摩擦因数为μ。现对下方B施加水平拉力F，使两物块一起向右做匀加速运动。求系统加速度，并分析A恰好不相对B滑动时F的最大值。若改为对上方A施加同样大小的拉力，系统运动情况是否相同？说明受力分析依据。"},
 "串联与并联电路":{medium:"电源电压保持6 V，两个电阻R1=10 Ω、R2=20 Ω。先将它们串联，再改为并联，分别求总电阻和干路电流，并比较两种连接方式中R1两端的电压。",hard:"电源电压恒为12 V，R1=20 Ω，滑动变阻器最大阻值为40 Ω。R1与滑动变阻器串联，电压表测R1两端电压，电流表测电路电流。闭合开关后移动滑片，要求判断电流表示数、电压表示数和R1功率如何变化；若将电压表改接在滑动变阻器两端，分析两电压表示数变化量之间的关系，并说明依据。"},
 "质量守恒定律":{medium:"将10.0 g碳酸钙与足量稀盐酸放入敞口烧杯中，充分反应后称得剩余物质总质量为105.6 g；反应前烧杯和稀盐酸总质量为100.0 g。判断该数据是否能直接说明质量守恒定律不成立，并计算生成二氧化碳的质量。",hard:"某小组分别用敞口烧杯和带气球的密闭锥形瓶进行碳酸钠与稀盐酸反应的实验。两组实验均发现反应后称量值与反应前不同。请分析两种装置中可能造成测量差异的原因，设计一套能验证质量守恒定律的改进方案，并说明气球、橡胶塞及称量范围分别应满足什么要求。"},
@@ -165,11 +166,20 @@ async function submitDiagnosis(){const error=$("errorText").value.trim(),reason=
 };
 const diagnosticText=(state.diagnosis.error+" "+state.diagnosis.reason+" "+state.diagnosis.repair).toLowerCase();
 const weakDiagnosis=state.diagnosis.reason.length<35||state.diagnosis.repair.length<35;
-const difficulty=weakDiagnosis?"medium":"hard";
-const transferItem=transferBank[state.concept]||{medium:"请结合一个实际情境解释该概念，并完成必要计算。",hard:"请设计一个包含多项条件的实际问题，运用该概念完成分析、计算并解释结论。"};
-const q=transferItem[difficulty];
+let difficulty=weakDiagnosis?"medium":"hard";
+let q=transferBank[state.concept]?.[difficulty]||"请结合一个实际情境解释该概念，并完成必要计算。";
+if($("apiKey").value.trim()){
+ try{
+  q=await callAI([
+   {role:"system",content:`你是严谨的${state.subject}命题教师。请为${state.level}学生设计一道${state.concept}的中等偏难或较难迁移题。题目应参考真实中高考的命题风格：综合多个条件，要求推理、计算、读图/实验分析或实际情境迁移，不能只是定义回忆或直接代公式。必须针对学生本轮诊断中的具体错误设计，考查他是否真正修正了该误解。给出完整、可作答的题干和必要数据，不要给答案、提示或解题步骤。只输出题目。`},
+   {role:"user",content:`本轮原题：${state.initial}\n学生指出的漏洞：${state.diagnosis.error}\n学生解释的错误原因：${state.diagnosis.reason}\n学生给出的修正：${state.diagnosis.repair}\n请设计一道全新的情境题，避免重复原题数字和问法。`}
+  ],.65);
+  difficulty="personalized";
+ }catch(e){/* API生成失败时使用本地题库 */}
+}
 state.transfer=q;
-$("transferQuestion").textContent=(difficulty==="hard"?"综合迁移题 · 中高难度\n":"进阶迁移题 · 中等难度\n")+q;
+$("transferQuestion").textContent=(difficulty==="hard"?"综合迁移题 · 中高难度\n":difficulty==="personalized"?"个性化迁移题 · 根据本轮诊断生成\n":"进阶迁移题 · 中等难度\n")+q;
+
 setPhase(4);$("notice").textContent="反馈已生成。现在请独立完成迁移题，不要依赖 AI 提示。";}catch(e){addMsg("ai","评价请求失败："+e.message+"。请重试提交。");}finally{setBusy(false)}}
 async function submitTransfer(){const ans=$("transferAnswer").value.trim();if(!ans){$("notice").textContent="请先写下你的独立答案和推理依据。";return}addMsg("student","我的独立迁移答案："+ans);setBusy(true);try{let final;if($("apiKey").value.trim()){final=await callAI([{role:"system",content:`你是${state.subject}教师。请评价学生对${state.concept}的独立迁移答案。此阶段原本不提供提示，现在学生已提交答案，可以给反馈。分别按概念理解、逻辑推理、复杂情境迁移三个维度各评0-4分，解释理由，指出正确之处与需改进之处，给出准确参考解释。最后简短总结。`},{role:"user",content:`迁移题：${state.transfer}\n学生答案：${ans}\n此前诊断：${JSON.stringify(state.diagnosis)}`}]);}else{final="你已完成独立迁移作答。内置体验模式不进行自动评分；请对照教材或教师提供的标准解释，检查自己是否准确使用了概念、推理是否完整，以及是否能将规律迁移到新情境。"}addMsg("ai",final,"独立迁移反馈");$("reportArea").classList.remove("hidden");$("reportArea").innerHTML="<h3>本轮学习完成</h3><p>你经历了诊断性提问、错误识别、解释修正和独立迁移四个关键学习活动。</p><div class='rubric'><div class='score'><b>3 项</b><span>过程表现维度</span></div><div class='score'><b>3 项</b><span>独立迁移维度</span></div><div class='score'><b>1 次</b><span>独立迁移挑战</span></div></div><p style='margin-top:12px;white-space:pre-wrap'>"+escapeHtml(final)+"</p><button class='btn secondary' style='margin-top:12px' onclick='window.print()'>打印本轮记录</button>";setPhase(5);$("notice").textContent="本轮结束。建议回顾：哪些问题最有效？你最初是否也存在与同伴相似的理解偏差？";}catch(e){addMsg("ai","迁移评价失败："+e.message)}finally{setBusy(false)}}
 function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
