@@ -164,8 +164,23 @@ const transferBank={
 "一元二次方程":{medium:"已知关于x的一元二次方程x²−(m+1)x+m=0。求判别式，并判断方程是否总有实数根；再讨论两个根是否一定为正数。",hard:"已知关于x的一元二次方程x²−(k+2)x+2k=0有两个正实数根。求k的取值范围，并说明仅凭判别式大于0为什么不足以保证两个根都为正；请结合根的和、根的积与判别式完成分类讨论。"},
 "相似三角形":{medium:"在△ABC中，DE∥BC，D在AB上，E在AC上。已知AD=3，DB=2，AE=4.5，求EC，并求△ADE与△ABC的面积比。",hard:"在△ABC中，D在AB上，E在AC上，连接DE。已知∠ADE=∠ACB，AD=4，AB=10，AC=8。证明△ADE与△ACB相似，并求AE；再比较△ADE与四边形DBCE的面积，说明相似比与面积比之间的关系。"}
 };
-const diagnosticText=(state.diagnosis.error+" "+state.diagnosis.reason+" "+state.diagnosis.repair).toLowerCase();
-const weakDiagnosis=state.diagnosis.reason.length<35||state.diagnosis.repair.length<35;
+const diagnosticText=state.diagnosis.error+" "+state.diagnosis.reason+" "+state.diagnosis.repair;
+const focusTerms={
+"浮力":["排开液体","排开水","体积","液体密度","阿基米德"],
+"牛顿第二定律":["合力","质量","加速度","惯性","F=ma"],
+"串联与并联电路":["串联","并联","电流","电压","支路"],
+"质量守恒定律":["密闭","气体","原子","反应前后","体系"],
+"酸碱中和反应":["过量","物质的量","pH","剩余","中和"],
+"溶解度":["温度","饱和","溶解速率","溶解度","结晶"],
+"光合作用":["呼吸作用","光照","光补偿点","净光合","二氧化碳"],
+"细胞呼吸":["有机物","能量","氧气","无氧呼吸","有氧呼吸"],
+"显性与隐性遗传":["基因型","等位基因","基因频率","分离定律","隐性纯合"],
+"一次函数":["斜率","截距","原点","定义域","函数表达式"],
+"一元二次方程":["判别式","根的和","根的积","韦达","根的符号"],
+"相似三角形":["对应角","对应边","成比例","面积比","相似比"]
+};
+const focusHits=(focusTerms[state.concept]||[]).filter(term=>diagnosticText.includes(term)).length;
+const weakDiagnosis=state.diagnosis.reason.length<35||state.diagnosis.repair.length<35||focusHits===0;
 let difficulty=weakDiagnosis?"medium":"hard";
 let q=transferBank[state.concept]?.[difficulty]||"请结合一个实际情境解释该概念，并完成必要计算。";
 if($("apiKey").value.trim()){
