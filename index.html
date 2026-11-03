@@ -17,9 +17,9 @@ main{max-width:1120px;margin:30px auto;padding:0 20px 60px}.intro{display:flex;j
 .composer{border-top:1px solid var(--line);padding:17px 22px;background:#fcfdff}.composer textarea{min-height:76px}.composer-actions{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:9px}.composer-actions small{color:var(--muted);font-size:11px}
 .notice{padding:12px 14px;border-radius:11px;background:#f4f7fa;color:#566779;font-size:12px;margin-top:14px}.notice.warn{background:var(--orange2);color:#8c5428}.notice.good{background:var(--green2);color:#25664f}
 .task-card{border:1px solid var(--line);border-radius:13px;padding:16px;margin:14px 0;background:#fff}.task-card h3{font-size:14px;margin:0 0 8px}.task-card p{margin:0}.rubric{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}.score{background:#f7f9fb;border-radius:10px;padding:12px}.score b{display:block;font-size:20px}.score span{font-size:11px;color:var(--muted)}
-.hidden{display:none!important}.loading{display:inline-flex;gap:8px;align-items:center;color:var(--muted);font-size:12px}.dot{width:6px;height:6px;border-radius:50%;background:#8ca4c2;animation:pulse 1s infinite alternate}@keyframes pulse{to{opacity:.25;transform:translateY(-3px)}}
+.original-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}.original-head a{font-size:12px;color:var(--blue);white-space:nowrap}.original-head h3{margin:0 0 3px}.task-card iframe{width:100%;height:520px;border:1px solid var(--line);border-radius:9px;background:#f7f9fb}.attachment-preview{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.attachment-item{font-size:11px;padding:6px 9px;border:1px solid var(--line);border-radius:8px;background:#f7f9fb;color:var(--muted)}.attachment-item img{display:block;max-width:130px;max-height:100px;object-fit:contain;margin-bottom:4px;border-radius:5px}.hidden{display:none!important}.loading{display:inline-flex;gap:8px;align-items:center;color:var(--muted);font-size:12px}.dot{width:6px;height:6px;border-radius:50%;background:#8ca4c2;animation:pulse 1s infinite alternate}@keyframes pulse{to{opacity:.25;transform:translateY(-3px)}}
 footer{max-width:1120px;margin:0 auto;padding:0 20px 30px;color:#8a96a4;font-size:11px}
-@media(max-width:800px){.layout{grid-template-columns:1fr}.side{position:static}.steps{grid-template-columns:repeat(5,minmax(0,1fr));gap:3px}.step{display:grid;justify-items:center;text-align:center;padding:7px 2px;font-size:10px}.step .num{margin:auto}.side hr,.side .config{display:none}.intro{display:block}.header-right .pill{display:none}}
+@media(max-width:800px){.layout{grid-template-columns:1fr}.side{position:static}.steps{grid-template-columns:repeat(5,minmax(0,1fr));gap:3px}.step{display:grid;justify-items:center;text-align:center;padding:7px 2px;font-size:10px}.step .num{margin:auto}.side hr,.side .config{display:none}.intro{display:block}.header-right .pill{display:none}.task-card iframe{height:420px}.original-head{display:block}.original-head a{display:inline-block;margin-top:6px}}
 </style>
 </head>
 <body>
@@ -42,9 +42,8 @@ footer{max-width:1120px;margin:0 auto;padding:0 20px 30px;color:#8a96a4;font-siz
    <hr>
    <div class="config">
     <h3>开始一轮学习</h3>
-    <div class="field"><label>学科</label><select id="subject"><option>物理</option><option>化学</option><option>生物</option><option>数学</option></select></div>
-    <div class="field"><label>学习概念</label><select id="concept"></select></div>
-    <div class="field"><label>学习阶段</label><select id="level"><option>初中</option><option selected>高中</option></select></div>
+    <div class="field"><label>学科</label><select id="subject"><option>物理</option><option>数学</option></select></div>
+    <div class="field"><label>高中学习概念</label><select id="concept"></select></div>
     <button class="btn primary full" id="startBtn">生成装懂同伴</button>
     <p class="hint">建议先从熟悉的概念开始。每轮只诊断一个核心漏洞。</p>
     <hr>
@@ -58,9 +57,14 @@ footer{max-width:1120px;margin:0 auto;padding:0 20px 30px;color:#8a96a4;font-siz
    </div>
   </aside>
   <section class="panel mainpanel">
-   <div class="topline"><div><div class="stage" id="stageTitle">阶段一：选择概念，开始挑战</div><div class="stage-desc" id="stageDesc">先选一个你正在学习的理科概念</div></div><span class="pill" id="statusPill">等待开始</span></div>
+   <div class="topline"><div><div class="stage" id="stageTitle">阶段一：选择概念，开始挑战</div><div class="stage-desc" id="stageDesc">选择高中数学或物理概念</div></div><span class="pill" id="statusPill">等待开始</span></div>
    <div class="content">
     <div class="welcome" id="welcome"><h2>欢迎来到概念诊断实验室</h2><p>你将与一位“装懂同伴”展开对话。请记住：答案看起来正确，不代表推理一定正确。真正重要的是你能否提出关键问题。</p></div>
+    <div id="originalQuestionCard" class="task-card hidden">
+      <div class="original-head"><div><h3 id="originalTitle">高考原卷题目</h3><div class="hint" id="originalMeta"></div></div><a id="originalLink" href="#" target="_blank" rel="noopener">在新窗口打开原卷</a></div>
+      <iframe id="originalFrame" title="高考原卷题目" loading="lazy"></iframe>
+      <p class="hint" style="margin-top:8px">此处展示原卷 PDF 页面。题干、图表和选项以原卷为准；下方同伴分析是 AI 学习活动设计，不属于原卷内容。</p>
+    </div>
     <div class="chat" id="chat" aria-live="polite">
      <div class="msg"><div class="avatar">AI</div><div class="bubble"><div class="who">装懂同伴</div>嗨！我已经学会这个概念啦。你可以随便考考我，我觉得自己肯定能答对！</div></div>
     </div>
@@ -73,7 +77,9 @@ footer{max-width:1120px;margin:0 auto;padding:0 20px 30px;color:#8a96a4;font-siz
     </div>
     <div id="transferArea" class="task-card hidden">
       <h3>独立迁移挑战</h3><p id="transferQuestion"></p>
-      <div class="field" style="margin-top:12px"><label>请独立作答（此阶段不提供 AI 提示）</label><textarea id="transferAnswer" placeholder="写出你的答案和推理依据……"></textarea></div>
+      <div class="field" style="margin-top:12px"><label>文字作答</label><textarea id="transferAnswer" placeholder="写出你的答案和推理依据……"></textarea></div>
+      <div class="field"><label>复杂公式 / LaTeX（可选）</label><input id="transferFormula" placeholder="例如：\\frac{d}{dx}f(x)=... 或直接输入公式"/></div>
+      <div class="field"><label>上传图片或附件（可选，支持图片、PDF、TXT）</label><input id="transferFiles" type="file" accept="image/*,.pdf,.txt,.md" multiple/><div class="hint">可以上传手写过程、几何/物理示意图、图表或 PDF 题目。PDF/TXT 会提取文字；图片会随答案发送给支持视觉输入的模型。</div><div id="attachmentPreview" class="attachment-preview"></div></div>
       <button class="btn primary" id="submitTransfer">提交独立答案</button>
     </div>
     <div id="reportArea" class="task-card hidden"></div>
@@ -87,18 +93,19 @@ footer{max-width:1120px;margin:0 auto;padding:0 20px 30px;color:#8a96a4;font-siz
  </div>
 </main>
 <footer>本 Demo 用于课程展示与学习设计验证。AI 生成内容可能存在错误；完成互动后请以教材、教师或经过审核的学习资料核对科学知识。</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>
 const $=id=>document.getElementById(id);
-let state={phase:0,subject:"物理",concept:"浮力",level:"高中",history:[],turns:0,hints:0,diagnosis:null,initial:null,transfer:null,report:null,busy:false};
+let state={phase:0,subject:"物理",concept:"理想气体状态变化",level:"高中",history:[],turns:0,hints:0,diagnosis:null,initial:null,transfer:null,report:null,busy:false,attachments:[]};
 function getApiBase(){return $("apiBase").value.trim().replace(new RegExp("/+$"),"");}
 function getModel(){return $("modelCustom").value.trim()||$("modelSelect").value.trim()||"deepseek-ai/DeepSeek-V3";}
 async function loadModels(){const key=$("apiKey").value.trim(),base=getApiBase();if(!key){$("apiHint").textContent="请先填写 API Key，再获取模型列表。";return}if(!base){$("apiHint").textContent="请填写 API 服务地址。";return}const btn=$("loadModelsBtn");btn.disabled=true;btn.textContent="正在获取…";try{const res=await fetch(base+"/models",{headers:{"Authorization":"Bearer "+key}});if(!res.ok)throw new Error("获取模型列表失败（"+res.status+"）");const data=await res.json();const models=(data.data||data.models||[]).map(x=>typeof x==="string"?x:x.id||x.name).filter(Boolean);if(!models.length)throw new Error("接口没有返回可识别的模型列表，请使用下方自定义模型 ID");const select=$("modelSelect"),previous=getModel();select.innerHTML="";models.forEach(id=>{const o=document.createElement("option");o.value=id;o.textContent=id;select.appendChild(o)});if(models.includes(previous))select.value=previous;$("modelCustom").value="";$("apiHint").textContent="已获取 "+models.length+" 个可用模型。选择一个模型即可使用。";}catch(e){$("apiHint").textContent=e.message+"。你仍可手动填写模型 ID；请确认服务商提供的是 OpenAI 兼容接口，且地址通常以 /v1 结尾。";}finally{btn.disabled=false;btn.textContent="获取模型列表";}}
 async function testApi(){if(!$("apiKey").value.trim()){$("apiHint").textContent="请先填写 API Key。";return}try{const answer=await callAI([{role:"user",content:"请只回复：API连接成功"}],0);$("apiHint").textContent="连接成功，模型回复："+answer.slice(0,100);}catch(e){$("apiHint").textContent="连接测试失败："+e.message;}}
 function addMsg(role,text,tag=""){const row=document.createElement("div");row.className="msg "+(role==="student"?"student":"");const av=document.createElement("div");av.className="avatar";av.textContent=role==="student"?"我":"AI";const b=document.createElement("div");b.className="bubble";if(tag){const t=document.createElement("div");t.className="tag";t.textContent=tag;b.appendChild(t)}const who=document.createElement("div");who.className="who";who.textContent=role==="student"?"你":"装懂同伴";b.appendChild(who);const body=document.createElement("div");body.textContent=text;b.appendChild(body);row.append(av,b);$("chat").appendChild(row);$("chat").scrollTop=$("chat").scrollHeight;return body}
 function setBusy(v){state.busy=v;$("sendBtn").disabled=v||state.phase!==1;$("startBtn").disabled=v;$("submitDiagnosis").disabled=v;$("submitTransfer").disabled=v;if(v){$("composerHint").innerHTML='<span class="loading"><span class="dot"></span>同伴正在组织语言…</span>'}else $("composerHint").textContent=state.phase===1?"继续追问，检查它的推理依据。":"当前阶段无需继续提问。"}
-function setPhase(n){state.phase=n;const labels=["阶段一：选择概念，开始挑战","阶段二：诊断性提问","阶段三：定位概念漏洞","阶段四：修正解释","阶段五：独立迁移挑战"];const desc=["先选一个你正在学习的理科概念","通过连续追问检查关键条件、机制或证据","判断它的解释是否存在漏洞","依据科学原理重建正确解释","不依赖 AI，将概念应用到新情境"];$("stageTitle").textContent=labels[n];$("stageDesc").textContent=desc[n];$("statusPill").textContent=["等待开始","对话进行中","等待诊断","修正与反馈","独立完成"][n];[...$("steps").children].forEach((el,i)=>{el.className="step"+(i===n?" active":i<n?" done":"")});$("message").disabled=n!==1;$("sendBtn").disabled=n!==1||state.busy;$("diagnosisArea").classList.toggle("hidden",n!==2);$("transferArea").classList.toggle("hidden",n!==4);$("composer").classList.toggle("hidden",n===0||n>=2);if(n===2)$("notice").textContent="请独立完成诊断。AI 不会替你指出漏洞；如果暂时没有思路，可以回到对话中继续追问。";if(n===4)$("notice").textContent="迁移阶段不提供 AI 提示。请独立完成新情境问题，检验自己是否真正理解。"}
+function setPhase(n){state.phase=n;const labels=["阶段一：选择概念，开始挑战","阶段二：诊断性提问","阶段三：定位概念漏洞","阶段四：修正解释","阶段五：独立迁移挑战"];const desc=["选择高中数学或物理概念","通过连续追问检查关键条件、机制或证据","判断它的解释是否存在漏洞","依据科学原理重建正确解释","不依赖 AI，将概念应用到新情境"];$("stageTitle").textContent=labels[n];$("stageDesc").textContent=desc[n];$("statusPill").textContent=["等待开始","对话进行中","等待诊断","修正与反馈","独立完成"][n];[...$("steps").children].forEach((el,i)=>{el.className="step"+(i===n?" active":i<n?" done":"")});$("message").disabled=n!==1;$("sendBtn").disabled=n!==1||state.busy;$("diagnosisArea").classList.toggle("hidden",n!==2);$("transferArea").classList.toggle("hidden",n!==4);$("composer").classList.toggle("hidden",n===0||n>=2);if(n===2)$("notice").textContent="请独立完成诊断。AI 不会替你指出漏洞；如果暂时没有思路，可以回到对话中继续追问。";if(n===4)$("notice").textContent="迁移阶段不提供 AI 提示。请独立完成新情境问题，检验自己是否真正理解。"}
 async function callAI(messages,temperature=.7){const key=$("apiKey").value.trim();if(!key)throw new Error("NO_KEY");const base=getApiBase();if(!base)throw new Error("请填写 API 服务地址");const model=getModel();if(!model)throw new Error("请先选择或填写模型 ID");const res=await fetch(base+"/chat/completions",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+key},body:JSON.stringify({model,messages,temperature,stream:false})});if(!res.ok){let t=await res.text();throw new Error("模型请求失败（"+res.status+"）："+t.slice(0,260))}const data=await res.json();return data.choices?.[0]?.message?.content||"我刚刚没组织好语言，你能换个方式问问吗？"}
-const systemPrompt=()=>`你是面向${state.level}学生的${state.subject}“装懂同伴”。当前学习概念：${state.concept}。你必须始终记住并使用本轮最初给出的原题、数据、条件、你的答案和推理过程。错误设计必须隐蔽且有思考价值：建立在合理的局部观察上，但遗漏适用条件、混淆相关物理量/变量、忽略实验误差或过度推广某个结论。不要使用“必然”“一定”“完全不可能”等绝对词制造显眼错误。错误要让学生结合题干条件、数据和过程才能发现，而不是一眼看出违反定义。
+const systemPrompt=()=>`你是面向高中学生的${state.subject}“装懂同伴”。当前学习概念：${state.concept}。你必须始终记住并使用本轮最初给出的原题、数据、条件、你的答案和推理过程。错误设计必须隐蔽且有思考价值：建立在合理的局部观察上，但遗漏适用条件、混淆相关物理量/变量、忽略实验误差或过度推广某个结论。不要使用“必然”“一定”“完全不可能”等绝对词制造显眼错误。错误要让学生结合题干条件、数据和过程才能发现，而不是一眼看出违反定义。
 
 【角色与回答规则】
 1. 你是一个自信、表达自然、但对题目中的一个关键知识点理解有偏差的同学，不是老师，不要自称AI。
@@ -109,37 +116,45 @@ const systemPrompt=()=>`你是面向${state.level}学生的${state.subject}“�
 6. 每次回答通常3—6句，包含针对问题的回应和至少一个原题细节；措辞审慎自然，可使用“我倾向于”“在这组条件下”“看起来可以”等表达，不要依靠绝对化措辞制造错误。
 7. 不要伪造题目中不存在的数据。若原题没有给出某个量，要明确说题目未提供，不要编造。
 8. 学生提交诊断后，后续评价由系统处理。只输出自然中文。`;
-const mockInitial={
-"浮力":"【原题｜2024年青海西宁中考真题·浮力实验探究】\n小西和同学利用弹簧测力计、物块、溢水杯、小桶和足量的水，探究“浮力的大小跟排开液体所受重力的关系”。实验中先测出物块重力，再将物块浸入水中，测出弹簧测力计示数；同时收集物块排开的水并测量其重力。\n\n同伴的分析：我认为只要把物块完全浸没，浮力就只由物块自身的重力决定。我把物块的重力和它排开液体的体积联系得比较紧，觉得较重的物块通常会压入得更深，因此浮力也会随之增大。至于溢水杯是否装满，我倾向于把它看成操作细节，因为测力计示数已经能反映浮力。你觉得我的判断有道理吧？",
-"牛顿第二定律":"【原题｜2025年山东高考真题第13题·验证牛顿第二定律】\n某实验小组用小车、长直轨道、光电门、宽度为d的遮光片、细线、定滑轮和托盘砝码验证牛顿第二定律。实验中将两光电门安装在轨道上，小车由静止释放，遮光片经过光电门1、2时的速度分别为v₁=0.40 m/s、v₂=0.81 m/s，两次经过光电门的时间间隔t=1.00 s。改变托盘及砝码质量，测量不同合力F对应的加速度a，并拟合a-F图像。\n\n同伴的分析：我认为遮光片越宽越好，因为遮光时间更长，测量速度更准确；我倾向于把托盘和砝码的重力近似看作小车受到的牵引力，这样处理能简化a-F关系。轨道倾角可能会影响小车运动，但如果各组实验都保持同一倾角，我觉得它对图像斜率的影响或许可以先忽略。你觉得这套实验分析正确吗？",
-"串联与并联电路":"【原题｜2024年江苏苏州中考真题·探究串联电路电流特点】\n小组按电路图连接两个规格不同的小灯泡，闭合开关后用电流表分别测量A、B两处电流。第一次测量后更换不同规格的灯泡，重复实验，发现两处电流表示数仍相等。实验前有同学提出猜想：“电流经过第一个灯泡会被消耗，因此流入第二个灯泡的电流会变小。”\n\n同伴的分析：灯泡发光时会把电能转化为其他形式的能量，所以我直觉上觉得通过灯泡的电流也会有所变化。两处读数接近，可能与电表精度和灯泡规格有关；我还不确定这组实验能否排除这些因素。",
-"质量守恒定律":"【原题｜2024年山西中考真题·密闭容器中的质量测定】\n实验课上，同学们将少量小苏打与少量白醋放入密闭容器，测定反应前后装置及药品的质量，并观察反应现象。\n\n同伴的分析：反应生成了二氧化碳，固体和液体部分的质量会发生变化。我倾向于先比较反应前后可见的固体、液体质量，因为气体不容易直接称量；如果气体留在密闭容器里，它对读数的影响还需要结合称量范围来判断。",
-"酸碱中和反应":"【原题｜2024年山东烟台中考真题·数字技术探究中和反应】\n某兴趣小组借助数字传感器研究稀盐酸与氢氧化钠溶液的反应，记录反应过程中的pH变化曲线。请根据曲线判断反应前溶液的酸碱性、a点溶液的pH与7的关系，并分析继续滴加液体后溶液中离子和溶质的变化。\n\n同伴的分析：盐酸和氢氧化钠反应生成盐和水后，溶液的酸碱性会向中性方向变化。我倾向于把反应进行到指示剂变色附近看作接近中和点；如果继续滴加酸，溶液组成会改变，但我还没有把剩余离子的浓度变化纳入判断。",
-"溶解度":"【原题｜2025年广西中考真题·侯氏制碱法与溶解度曲线】\n侯氏制碱法涉及NaCl、NH₄Cl、NaHCO₃等物质。试题给出相关物质的溶解度曲线，要求判断不同温度下物质溶解度的大小、饱和溶液降温时晶体析出情况，以及利用溶解度差异分离或制备晶体的依据。\n\n同伴的分析：在题目所示温度范围内，一条曲线大部分位于另一条曲线上方，我据此判断前者溶解能力更强。比较降温析晶时，我先关注两条曲线下降的幅度；如果降温幅度相同，我倾向于认为析出量也会接近，但还没有结合初始溶液质量和溶解度变化量计算。",
-"光合作用":"【原题｜2025年全国高考生物真题·光合速率对光照强度的响应】\n在一定温度下，研究人员测定大田植物的光合速率（CO₂固定速率）和呼吸速率（CO₂释放速率）随光照强度变化的曲线。图中a点处两种速率相等，光照强度继续增加后，光合速率逐渐上升，并在b点附近达到平台。试判断不同光照条件下植物干重和生长速率的变化。\n\n同伴的分析：a点处光合速率与呼吸速率相等，我认为植物已经具备较强的有机物合成能力。b点附近曲线趋于平缓，说明光照不再是唯一限制因素；不过我比较不同光照处理时，主要看光合速率曲线，没有进一步区分净速率与总光合速率。",
-"细胞呼吸":"【原题｜2025年安徽高考生物真题·低氧胁迫下的细胞呼吸】\n科研小组研究油菜在正常供氧和低氧胁迫条件下的根细胞呼吸速率及氧浓度，并比较野生型与NtPIP基因过量表达株的生理指标。题目要求结合实验结果分析低氧条件下有氧呼吸变化的原因，并联系叶片净光合速率解释相关现象。\n\n同伴的分析：氧气供应下降会限制有氧呼吸，我因此把低氧组ATP生成的变化主要归因于有氧呼吸受抑制。若细胞还有其他代谢途径，能量供应可能不会同步降到相同程度；不过我在解释数据时主要关注氧气消耗量。",
-"显性与隐性遗传":"【原题｜2024年安徽高考生物真题·双遗传病家系分析】\n某家系中存在甲、乙两种单基因遗传病，甲病由A/a控制，乙病由B/b控制，两对基因独立遗传。试题提供家系系谱图及部分成员的分子检测结果，要求判断两种遗传病的遗传方式、推测相关个体基因型，并计算不同婚配情境下子代患病概率。\n\n同伴的分析：显性等位基因在杂合子中也能表现，因此我觉得显性性状在家系中更容易被观察到。由此我倾向于把家系中出现次数较多的性状判断为显性性状，但还没有把样本家系中的表现情况与群体中的等位基因频率区分开。",
-"一次函数":"【原题｜2024年内蒙古呼伦贝尔中考真题·水果销售方案】\n某超市从水果基地购进甲、乙两种水果。已知购进甲种水果18 kg和乙种水果6 kg共需366元，购进甲种水果30 kg和乙种水果15 kg共需705元。超市计划每天购进两种水果共150 kg，并根据甲种水果的进货量设置分段降价规则。题目要求建立利润与甲种水果进货量之间的函数关系，并求最大利润及对应方案。\n\n同伴的分析：我先用两个已知销售方案求出单位价格关系，再建立利润与进货量之间的线性关系。题目中超过80 kg后有新的降价规则，我认为这可能只会改变函数图像的斜率或截距；我还没有判断是否需要分段建立解析式。",
-"一元二次方程":"【原题｜2025年中考数学真题·一元二次方程根的判别与应用】\n某地中考数学试题围绕一元二次方程的根的情况设置综合问题，要求根据方程系数判断是否有两个不相等的实数根，并结合实际情境中的长度、面积或数量限制筛选符合条件的解。\n\n同伴的分析：判别式大于0能说明方程有两个不同实根。我倾向于先保留这两个代数解，再代回题目中的关系式检查；如果题目中的量表示长度或数量，我觉得题目给出的几何或数量关系本身可能已经限制了解的范围。",
-"相似三角形":"【原题｜2024年湖北中考真题·利用相似三角形测量树高】\n小明为了测量一棵树的高度，设计了两种方案：方案一是在距离树一定距离处测量树顶的仰角；方案二是在树与观察者之间放置一面镜子，观察者后退到恰好能在镜中看到树顶的位置。已知树与镜子的水平距离为10 m，观察者到镜子的距离为2 m，观察者眼睛离地面1.6 m。请任选一种方案求树高。\n\n同伴的分析：镜面反射提供了一组相等的角，结合地面与竖直方向的垂直关系，可以构造出两个直角三角形。我认为这能支持相似关系；不过在列比例式时，我倾向于按图形上看起来相邻的边配对，未必逐一核对对应顶点。"
-};
-const levelVariants={
-"初中":{
-"浮力":"【初中物理情境题｜潜水艇排水实验】\n科技社团用模型潜水艇研究水舱进水对运动状态的影响。艇体外部体积近似不变，水舱逐渐进水时总质量增加；排水后总质量减小。\n\n同伴的分析：我认为进水后艇体排开水的体积变化不大，所以浮力变化也不明显；潜水艇开始下沉，主要是因为总重力增加。由此看来，只要比较潜水艇的总重力和浮力，就能解释它的运动状态，排水量的变化可以先不考虑。",
-"质量守恒定律":"【初中化学情境题｜铁钉生锈质量变化】\n小组将洁净铁钉分别放入干燥空气、蒸馏水和食盐水中，数日后取出、干燥并称量。食盐水中的铁钉表面出现较多红褐色物质，质量也发生变化。\n\n同伴的分析：铁钉生锈后质量增加，说明铁与空气中的成分及水发生了结合。我觉得只要比较铁钉反应前后的质量，就能判断这个变化是否符合质量守恒；其他参与反应的物质对这次称量的影响，可以暂时不纳入分析。",
-"光合作用":"【初中生物情境题｜光照与叶片淀粉】\n同学们将长势相近的两盆天竺葵分别放在光照充足和弱光环境中，保持浇水量与土壤条件相近，一段时间后比较叶片淀粉检测结果和植株生长情况。\n\n同伴的分析：弱光组叶片检测到的淀粉较少，说明光照强度会影响有机物积累。我认为比较叶片淀粉多少就能判断整株植物一段时间内制造有机物的总量；叶片数量和呼吸消耗对这个比较的影响可以先不考虑。",
-"一次函数":"【初中数学情境题｜出租车计费】\n某市出租车起步价为10元，起步里程3 km；超过3 km的部分按每千米2元计费，低速等待时另有计费规则。小明记录两次行程的路程和费用，尝试建立费用y与路程x之间的函数关系。\n\n同伴的分析：超过起步里程后，费用随路程增加而匀速增长，所以我用两个记录点求出一次函数解析式。起步阶段和等待计费属于附加项，我觉得可以合并进截距，不必另行讨论函数的适用区间。"
+const examBank={
+"理想气体状态变化":{
+ title:"2024年普通高中学业水平等级性考试（北京卷）物理第3题",
+ meta:"2024年北京高考物理真题 · 第一部分第3题 · 原卷第1页",
+ url:"https://cdn.zgkao.com/17199700271072024%E5%8C%97%E4%BA%AC%E9%AB%98%E8%80%83%E7%9C%9F%E9%A2%98%E7%89%A9%E7%90%86%EF%BC%88%E6%95%99%E5%B8%88%E7%89%88%EF%BC%89.pdf",
+ page:1,
+ analysis:"我觉得这题主要看气泡上浮时外界压强的变化。题目说水槽恒温、气体分子数不变，所以我会用理想气体状态方程分析。气泡上升时体积会变大，温度保持不变，因此内能没有变化。我的理解是，气体膨胀时外界对气体做功，所以气体需要向外放热；这应该能解释它上浮过程中的能量变化。"
 },
-"高中":{
-"浮力":"【高中物理情境题｜完全浸没物块的测力计示数】\n一物块用细线悬挂于弹簧测力计下方，缓慢浸入密度为ρ的液体。物块逐渐浸入时测力计示数减小；完全浸没后，继续缓慢下移一段距离，示数基本保持不变。忽略液体密度随深度变化。\n\n同伴的分析：物块刚进入液体时，浸入体积增加，浮力随之增大。完全浸没后，深处液体压强更大，我倾向于认为物块上下表面的压力差还会略有增加，因此浮力可能继续变化，只是测力计示数的变化幅度较小。",
-"质量守恒定律":"【高中化学情境题｜碳酸钙样品纯度测定】\n某小组称取一定质量的碳酸钙样品，与足量稀盐酸反应，并测量反应前后装置质量；另用气体吸收装置测定生成的二氧化碳。直接敞口称量与连接吸收装置称量所得数据不同。\n\n同伴的分析：样品中碳酸钙已经完全反应，因此装置质量的减少主要对应二氧化碳逸出。我想先用质量差换算二氧化碳质量并计算样品纯度，之后再考虑杂质和装置带来的误差；这个处理应该能给出比较接近的结果。",
-"光合作用":"【高中生物情境题｜净光合速率与全天有机物积累】\n研究人员测定某植物叶片净光合速率随光照强度变化的曲线，并同步测量不同处理组的呼吸速率。曲线在低光照区上升较快，随后逐渐趋于稳定；不同处理组呼吸速率存在差异。\n\n同伴的分析：光照达到平台后，净光合速率变化不大，因此我认为继续延长光照时间对全天有机物积累的影响也比较有限。比较不同处理组时，直接比较平台高度应该就能判断哪组积累的有机物更多，暗期呼吸消耗可以作为次要因素处理。",
-"一次函数":"【高中数学情境题｜分段收费模型】\n某共享设备按使用时长收费：前30分钟收取基础费用，超过部分按每分钟固定费率计费；暂停时段不计入计费时长。题目给出两位用户的使用记录，要求建立费用与实际计费时长之间的函数模型，并讨论模型适用范围。\n\n同伴的分析：超过30分钟后，费用随计费时长呈线性增长，因此可以用一个一次函数描述整个收费过程。基础费用可以通过截距体现，前30分钟的规则只影响图像起点，不需要把它作为另一段函数单独处理。"
+"牛顿第二定律与连接体":{
+ title:"2024年普通高中学业水平等级性考试（北京卷）物理第4题",
+ meta:"2024年北京高考物理真题 · 第一部分第4题 · 原卷第1页",
+ url:"https://cdn.zgkao.com/17199700271072024%E5%8C%97%E4%BA%AC%E9%AB%98%E8%80%83%E7%9C%9F%E9%A2%98%E7%89%A9%E7%90%86%EF%BC%88%E6%95%99%E5%B8%88%E7%89%88%EF%BC%89.pdf",
+ page:1,
+ analysis:"我先把飞船和空间站看成整体，整体加速度可以由外力F除以总质量m+M得到。接下来要求两者之间的作用力，我倾向于选飞船作为研究对象，用飞船质量m乘以整体加速度，得到mF/(m+M)。因为飞船和空间站之间的相互作用力是连接两部分运动的关键，我觉得这样选研究对象最直接。"
+},
+"概率与统计":{
+ title:"2024年北京市高考数学第18题",
+ meta:"2024年北京高考数学真题 · 第18题 · 原卷第4页",
+ url:"https://www.bjxhbt.com/m/a51b7a995b3f49b28188e4270fd73e88_20240606111435.pdf",
+ page:4,
+ analysis:"我会先用样本频率估计各类保单的索赔概率，再计算毛利润的数学期望。表格里四次索赔的保单只有10份，占比很低；计算时我倾向于把每次赔偿都按0.8万元处理，这样能统一计算前三次赔偿的支出。第四次赔偿金额与前三次略有不同，但它出现的频率较低，我觉得对期望值的影响可以先忽略。"
+},
+"导数及其应用":{
+ title:"2024年北京市高考数学第20题",
+ meta:"2024年北京高考数学真题 · 第20题 · 原卷第5页",
+ url:"https://www.bjxhbt.com/m/a51b7a995b3f49b28188e4270fd73e88_20240606111435.pdf",
+ page:5,
+ analysis:"我先根据题目给出的函数表达式求导，再利用导数研究单调性和切线。对于第（2）问，切线是否经过原点，可以转化为切线方程中的截距是否为0。我倾向于认为只要切点横坐标t为正、函数值f(t)也为正，切线就不会经过原点；因为切点在第一象限，切线的位置也会受到这个条件限制。"
 }
 };
-async function start(){state.subject=$("subject").value;state.concept=$("concept").value;state.level=$("level").value;state.history=[];state.turns=0;state.hints=0;state.initial=null;state.diagnosis=null;state.report=null;$("chat").innerHTML="";$("welcome").classList.add("hidden");$("reportArea").classList.add("hidden");$("transferArea").classList.add("hidden");$("diagnosisArea").classList.add("hidden");setPhase(1);addMsg("student",`我想考考你：${state.concept}。请你自己出一道相关题目并解释你的解题思路。`);setBusy(true);
-try{let first=levelVariants[state.level]?.[state.concept]||mockInitial[state.concept]||`【情境化考试题】请结合${state.concept}相关的实际情境、题目条件和数据完成分析。\n\n我的判断：我觉得只要套用最熟悉的公式或结论就可以，不必再检查题目中的其他条件。你可以追问我。`;
-state.initial=first;state.history=[{role:"assistant",content:first}];addMsg("ai",first,"我来展示一下我的理解");$("notice").textContent=$("apiKey").value.trim()?"已连接模型。注意：你需要通过提问检查同伴的推理，而不是只看最终答案。" :`当前为内置体验模式，已载入“${state.concept}”的完整题目与推理示例。填写硅基流动 Key 后可体验动态生成与个性化多轮对话。`;}catch(e){addMsg("ai","连接模型时遇到问题："+e.message+"。你可以检查 API Key 和模型名称，或清空 Key 使用内置示例。");setPhase(0)}finally{setBusy(false)}}
+function showOriginalQuestion(){
+ const q=examBank[state.concept];if(!q)return;
+ $("originalQuestionCard").classList.remove("hidden");
+ $("originalTitle").textContent=q.title;$("originalMeta").textContent=q.meta;
+ $("originalLink").href=q.url+"#page="+q.page;
+ $("originalFrame").src=q.url+"#page="+q.page+"&toolbar=1&navpanes=0";
+}
+async function start(){state.subject=$("subject").value;state.concept=$("concept").value;state.level="高中";state.history=[];state.turns=0;state.hints=0;state.initial=null;state.diagnosis=null;state.report=null;state.attachments=[];$("chat").innerHTML="";$("welcome").classList.add("hidden");$("reportArea").classList.add("hidden");$("transferArea").classList.add("hidden");$("diagnosisArea").classList.add("hidden");$("transferAnswer").value="";$("transferFormula").value="";$("transferFiles").value="";$("attachmentPreview").innerHTML="";showOriginalQuestion();setPhase(1);addMsg("student",`我想考考你：${state.concept}。请你结合上方原卷题目，解释你的解题思路。`);setBusy(true);
+try{const first=examBank[state.concept].analysis;state.initial=first;state.history=[{role:"assistant",content:first}];addMsg("ai",first,"同伴对原卷题目的分析");$("notice").textContent=$("apiKey").value.trim()?"已连接模型。请结合上方原卷题目，追问同伴分析中的依据与逻辑。":"当前为内置体验模式。上方显示的是可核验的高考原卷页面；同伴分析为本 Demo 编写的错误推理示例。填写 API Key 后可进行动态多轮对话。";}catch(e){addMsg("ai","载入题目时遇到问题："+e.message);setPhase(0)}finally{setBusy(false)}}
 async function send(){const msg=$("message").value.trim();if(!msg||state.phase!==1||state.busy)return;$("message").value="";addMsg("student",msg);state.turns++;state.history.push({role:"user",content:msg});setBusy(true);try{let answer;if($("apiKey").value.trim()){answer=await callAI([{role:"system",content:systemPrompt()},...state.history]);}else{answer=mockReply(msg,state.turns)}state.history.push({role:"assistant",content:answer});addMsg("ai",answer);if(state.turns>=1){$("finishChatBtn").classList.remove("hidden");}
 if(state.turns>=2&&state.turns%2===0){$("notice").textContent="想一想：你的问题是否触及了关键条件、概念机制或证据？如果还没有，可以继续追问。"}if(/我认为|漏洞|错误|不对|应该是|因为|原理/.test(msg)&&state.turns>=2){$("notice").textContent="你似乎开始检验它的解释了。可以继续追问，也可以点击“我准备好诊断了”进入下一步。";$("composerHint").textContent="当你认为已经找到问题时，点击下方按钮提交诊断。";$("finishChatBtn").classList.remove("hidden");}}catch(e){addMsg("ai","这次没有成功回复："+e.message+"。请检查网络、Key 或模型名称后重试。")}finally{setBusy(false)}}
 function mockReply(msg,turn){
@@ -169,51 +184,21 @@ function mockReply(msg,turn){
  if(fn)return fn();
  return `回到刚才那道关于“${state.concept}”的题目，我当时是根据题目给出的条件“${state.initial.slice(0,90)}”作出判断的。你问的这个问题涉及我推理中的关键一步：我把题目中的这个条件理解成了支持原结论的依据。我的理解是，题目给出的信息已经足以让我这样判断；如果你认为不成立，可以指出具体哪一个条件不能推出我的结论。`;
 }
-async function submitDiagnosis(){const error=$("errorText").value.trim(),reason=$("reasonText").value.trim(),repair=$("repairText").value.trim();if(!error||!reason||!repair){$("notice").textContent="请尽量完成三个部分：指出漏洞、解释原因、给出正确解释。";return}state.diagnosis={error,reason,repair};addMsg("student","我的诊断：\n漏洞："+error+"\n原因："+reason+"\n正确解释："+repair);setBusy(true);try{let feedback;if($("apiKey").value.trim()){feedback=await callAI([{role:"system",content:`你是严谨、鼓励性的${state.subject}学习评价者。学生学习概念${state.concept}。根据对话和学生诊断，分别评价三个维度：诊断性问题、错误识别、科学解释。每项给0-4分并说明理由；指出遗漏或不准确之处；给出准确的概念核对说明。不要夸大分数。最后给出一道全新的迁移题（不要给答案），适合${state.level}。格式清晰，中文。`},{role:"user",content:`同伴初始解释：${state.initial}\n对话记录：${JSON.stringify(state.history)}\n学生诊断：${JSON.stringify(state.diagnosis)}\n请评价并给出迁移题。`}]);}else{feedback=`诊断反馈（内置体验模式）\n\n你已经完成了对“${state.concept}”的漏洞识别与解释修正。当前未连接模型，系统无法根据你的具体回答进行自动评分。请对照教材或教师提供的标准解释，检查你是否准确指出了概念漏洞、说明了错误原因，并使用正确原理完成修正。\n\n接下来请在迁移题中独立运用“${state.concept}”这一概念。`;}addMsg("ai",feedback,"诊断反馈");state.report=feedback;
-const transferBank={
-"浮力":{medium:"【迁移题｜2024年青海西宁中考真题·阿基米德原理实验】\n实验小组用弹簧测力计、物块、溢水杯和小桶探究浮力与排开液体重力的关系。物块在空气中测得重力为2.0 N，完全浸没水中时弹簧测力计示数为1.0 N。\n（1）求物块受到的浮力；（2）若溢水杯未装满水，测得的排开水重力会偏大还是偏小？（3）若将物块换成能漂浮在水面的木块，能否继续验证阿基米德原理？说明理由。",hard:"【迁移题｜2024年山东青岛中考真题·海边浮力探究】\n小明在海边游泳时发现塑料泡沫板浮在水面上，而石块沉入水底，于是用弹簧测力计将石块缓慢浸入水中。请结合实验现象分析：石块浸入过程中测力计示数如何变化；石块完全浸没且未触底后示数是否继续变化；若将相同体积的铜块和铝块分别浸没在水中，它们受到的浮力是否相同？逐项说明依据。"},
-"牛顿第二定律":{medium:"【迁移题｜2025年山东高考真题第13题·验证牛顿第二定律】\n实验小组用小车、光电门和遮光片测量加速度。遮光片经过两个光电门时的速度分别为0.40 m/s和0.81 m/s，时间间隔为1.00 s。\n（1）求小车加速度；（2）改变托盘砝码质量，拟合a-F图像；（3）若图像不过原点，应如何调整轨道倾角？（4）说明a-F图像斜率的物理意义及单位。",hard:"【迁移题｜2025年北京高考物理真题·斜面运动情境】\n一个小球从山坡顶端由静止沿直滑道下滑，不计阻力。两条滑道通向同一高度的不同位置，坡面倾角不同。请从受力分析出发比较小球沿两条滑道运动时的加速度；再判断小球到达同一高度时速度大小是否相同，并说明加速度、速度与运动路径之间的区别。"},
-"串联与并联电路":{medium:"【迁移题｜2025年湖北中考真题·蒸汽洗地机电路设计】\n某款家用蒸汽洗地机中，开关S1控制电机M1和M2同时工作，开关S2单独控制电阻R加热水产生蒸汽；机器倾倒时，开关S3断开整个电路。请画出或描述符合要求的电路连接方式，并说明M1、M2、加热电阻R及三个开关分别应如何连接。",hard:"【迁移题｜2024年江苏苏州中考真题·串联电路电流实验】\n小组用两个不同规格的小灯泡探究串联电路电流规律。第一次测得A点电流后，又测B点电流；更换不同规格灯泡重复实验，结果仍显示两处电流相等。请指出实验中需要控制或改变的条件、多次实验的目的，并评价“灯泡会消耗电流，所以后一个灯泡电流更小”的猜想。"},
-"质量守恒定律":{medium:"【迁移题｜2024年山西中考真题·小苏打与白醋反应】\n同学们将少量小苏打与少量白醋放入密闭容器，测定反应前后装置及药品总质量。请判断反应前后总质量的关系，并从微观角度解释原因；若改用敞口烧杯进行相同实验，天平示数可能出现怎样的变化？",hard:"【迁移题｜2023年四川中考真题·质量守恒实验改进】\n某小组用稀盐酸与碳酸钙反应验证质量守恒定律，发现反应后天平读数发生变化。请分析敞口装置中可能出现该现象的原因，并设计密闭实验装置；说明若使用气球收集气体，为什么仍需考虑气球膨胀对称量的影响。"},
-"酸碱中和反应":{medium:"【迁移题｜2024年山东烟台中考真题·盐酸与氢氧化钠反应】\n实验小组利用pH传感器记录稀盐酸与稀氢氧化钠溶液反应过程中的pH变化。请根据曲线判断反应前溶液B的性质、a点溶液的酸碱性，并解释从a点到b点pH变化的微观原因。",hard:"【迁移题｜2025年内蒙古中考真题·pH与温度传感器实验】\n实验小组取10 g溶质质量分数为3.65%的稀盐酸，逐滴加入氢氧化钠溶液，同时记录pH和温度变化。请判断反应进行至曲线B点时溶液的酸碱性、C点滴加指示剂后的颜色，并根据化学方程式计算恰好完全反应时所需氢氧化钠的质量。"},
-"溶解度":{medium:"【迁移题｜2025年广西中考真题·侯氏制碱法】\n侯氏制碱法涉及NaCl、NH4Cl和NaHCO3。结合题目给出的三种物质溶解度曲线，判断哪种物质在指定温度下溶解度最大，并分析将不同物质的饱和溶液降温后析出晶体质量能否直接比较。",hard:"【迁移题｜2025年山东中考真题·NaCl与KNO3溶解度曲线】\n题目给出NaCl和KNO3的溶解度曲线。请判断两者受温度影响程度的差异、曲线交点的含义，以及将高温下KNO3饱和溶液降温后是否一定析出晶体；说明比较析出晶体质量时还需要哪些条件。"},
-"光合作用":{medium:"【迁移题｜2025年四川高考生物真题·温室番茄增产】\n冬季温室番茄平均光照强度约200 μmol·m⁻²·s⁻¹、CO₂浓度约400 μmol·mol⁻¹。研究人员设置补充光照、提高CO₂浓度及两者同时处理的组别，测得净光合速率分别为对照组7.5、甲组14.0、乙组10.0、丙组17.5（单位相同）。请分析光照和CO₂浓度对净光合速率的影响，并解释丙组与甲组差异。",hard:"【迁移题｜2025年全国高考生物真题·光照强度响应曲线】\n题目给出大田植物光合速率（CO₂固定速率）和呼吸速率（CO₂释放速率）随光照强度变化的曲线，a点为两速率相等处，b点附近光合速率达到平台。请判断a点植物干重是否增加、光照从a增至b时生长速率如何变化，以及在b点进一步增强光照是否一定提高光合速率。"},
-"细胞呼吸":{medium:"【迁移题｜2025年安徽高考生物真题·油菜根细胞低氧呼吸】\n科研人员比较油菜野生型和NtPIP基因过量表达株在正常供氧与低氧胁迫下的根细胞呼吸速率。请结合氧浓度变化，分析低氧条件下有氧呼吸速率的变化，并说明有氧呼吸第二阶段的能量转化特点。",hard:"【迁移题｜2025年重庆高考生物真题·T细胞凋亡与坏死】\n研究人员比较T细胞凋亡和坏死过程中ATP生成速率与氧气消耗速率。请分析氧气消耗速率能否直接代表ATP生成总量，并结合有氧呼吸和无氧呼吸的产物、场所解释原因。"},
-"显性与隐性遗传":{medium:"【迁移题｜2024年安徽高考生物真题·家系遗传病分析】\n某家系存在甲、乙两种单基因遗传病，两对基因独立遗传。甲病由A/a控制，乙病由B/b控制。结合家系系谱图判断两种遗传病的遗传方式，并推测指定家庭成员的基因型。",hard:"【迁移题｜2024年安徽高考生物真题·遗传风险计算】\n某家系中乙病为常染色体隐性遗传病，已知正常人群携带者概率为1/75。结合家系成员的基因型信息，计算指定个体与无亲缘关系正常男子婚配后生育患病孩子的概率，并比较与近亲婚配时的风险差异。"},
-"一次函数":{medium:"【迁移题｜2024年内蒙古呼伦贝尔中考真题·水果超市利润方案】\n某超市每天购进甲、乙两种水果共150 kg，甲种水果进货量不少于50 kg且不超过120 kg；甲种水果超过80 kg的部分需降价销售。请建立利润y与甲种水果进货量x之间的分段函数关系，并说明为什么不能用同一个解析式覆盖全部进货范围。",hard:"【迁移题｜2024年黑龙江齐齐哈尔中考真题·无人机高度变化】\n甲、乙两架无人机同时匀速上升，甲机从地面起飞，乙机从离地20 m的楼顶起飞。题目给出两机高度y与时间x的函数图像，并说明甲机在到达指定高度后暂停上升再继续飞行。请根据图像求速度、对应线段的函数解析式，并判断两机高度差达到指定值的时刻。"},
-"一元二次方程":{medium:"【迁移题｜2025年中考数学真题·一元二次方程根的判别】\n某题给出关于x的一元二次方程及参数，要求不解方程判断根的情况。请写出判别式，并根据参数范围判断方程有两个不相等实数根、两个相等实数根还是没有实数根。",hard:"【迁移题｜2025年中考数学真题·一元二次方程实际应用】\n某中考应用题以矩形场地面积或商品销售为背景，建立关于未知量的一元二次方程。请先根据实际数量关系列方程，再利用判别式或因式分解求解，并结合长度、数量不能为负及题目范围筛选实际可行解。"},
-"相似三角形":{medium:"【迁移题｜2024年湖北中考真题·镜面测树高】\n小明在树与观察者之间放置一面镜子，后退2 m后恰好在镜中看到树顶。树与镜子的水平距离为10 m，小明眼睛离地面1.6 m。请画出示意图，说明哪两个三角形相似，并求树高。",hard:"【迁移题｜2024年山东威海中考真题·测量护堤石坝倾斜角】\n某校学生用竹竿和米尺测量护堤石坝与地平面的倾斜角。题目给出竹竿、地面及测量点的示意图，要求选择必要的线段长度，通过构造平行线证明两个三角形相似，并推导倾斜角的三角函数值。"}
-};
-const diagnosticText=state.diagnosis.error+" "+state.diagnosis.reason+" "+state.diagnosis.repair;
-const focusTerms={
-"浮力":["排开液体","排开水","体积","液体密度","阿基米德"],
-"牛顿第二定律":["合力","质量","加速度","惯性","F=ma"],
-"串联与并联电路":["串联","并联","电流","电压","支路"],
-"质量守恒定律":["密闭","气体","原子","反应前后","体系"],
-"酸碱中和反应":["过量","物质的量","pH","剩余","中和"],
-"溶解度":["温度","饱和","溶解速率","溶解度","结晶"],
-"光合作用":["呼吸作用","光照","光补偿点","净光合","二氧化碳"],
-"细胞呼吸":["有机物","能量","氧气","无氧呼吸","有氧呼吸"],
-"显性与隐性遗传":["基因型","等位基因","基因频率","分离定律","隐性纯合"],
-"一次函数":["斜率","截距","原点","定义域","函数表达式"],
-"一元二次方程":["判别式","根的和","根的积","韦达","根的符号"],
-"相似三角形":["对应角","对应边","成比例","面积比","相似比"]
-};
-const focusHits=(focusTerms[state.concept]||[]).filter(term=>diagnosticText.includes(term)).length;
-const weakDiagnosis=state.diagnosis.reason.length<35||state.diagnosis.repair.length<35||focusHits===0;
-let difficulty=weakDiagnosis?"medium":"hard";
-let q=transferBank[state.concept]?.[difficulty]||"请结合一个实际情境解释该概念，并完成必要计算。";
-
-state.transfer=q;
-$("transferQuestion").textContent=(difficulty==="hard"?"综合迁移题 · 中高难度\n":difficulty==="personalized"?"个性化迁移题 · 根据本轮诊断生成\n":"进阶迁移题 · 中等难度\n")+q;
-
-setPhase(4);$("notice").textContent="反馈已生成。现在请独立完成迁移题，不要依赖 AI 提示。";}catch(e){addMsg("ai","评价请求失败："+e.message+"。请重试提交。");}finally{setBusy(false)}}
-async function submitTransfer(){const ans=$("transferAnswer").value.trim();if(!ans){$("notice").textContent="请先写下你的独立答案和推理依据。";return}addMsg("student","我的独立迁移答案："+ans);setBusy(true);try{let final;if($("apiKey").value.trim()){final=await callAI([{role:"system",content:`你是${state.subject}教师。请评价学生对${state.concept}的独立迁移答案。此阶段原本不提供提示，现在学生已提交答案，可以给反馈。分别按概念理解、逻辑推理、复杂情境迁移三个维度各评0-4分，解释理由，指出正确之处与需改进之处，给出准确参考解释。最后简短总结。`},{role:"user",content:`迁移题：${state.transfer}\n学生答案：${ans}\n此前诊断：${JSON.stringify(state.diagnosis)}`}]);}else{final="你已完成独立迁移作答。内置体验模式不进行自动评分；请对照教材或教师提供的标准解释，检查自己是否准确使用了概念、推理是否完整，以及是否能将规律迁移到新情境。"}addMsg("ai",final,"独立迁移反馈");$("reportArea").classList.remove("hidden");$("reportArea").innerHTML="<h3>本轮学习完成</h3><p>你经历了诊断性提问、错误识别、解释修正和独立迁移四个关键学习活动。</p><div class='rubric'><div class='score'><b>3 项</b><span>过程表现维度</span></div><div class='score'><b>3 项</b><span>独立迁移维度</span></div><div class='score'><b>1 次</b><span>独立迁移挑战</span></div></div><p style='margin-top:12px;white-space:pre-wrap'>"+escapeHtml(final)+"</p><button class='btn secondary' style='margin-top:12px' onclick='window.print()'>打印本轮记录</button>";setPhase(5);$("notice").textContent="本轮结束。建议回顾：哪些问题最有效？你最初是否也存在与同伴相似的理解偏差？";}catch(e){addMsg("ai","迁移评价失败："+e.message)}finally{setBusy(false)}}
+async function submitDiagnosis(){const error=$("errorText").value.trim(),reason=$("reasonText").value.trim(),repair=$("repairText").value.trim();if(!error||!reason||!repair){$("notice").textContent="请完成漏洞识别、错误原因和正确解释三个部分。";return}state.diagnosis={error,reason,repair};addMsg("student","我的诊断：\\n漏洞："+error+"\\n原因："+reason+"\\n正确解释："+repair);setBusy(true);try{let feedback;if($("apiKey").value.trim()){feedback=await callAI([{role:"system",content:"你是严谨、鼓励性的高中"+state.subject+"教师。依据原题与对话，评价学生的诊断性提问、错误识别和科学解释三个维度，每项0-4分，说明理由，指出遗漏与准确之处。不要直接夸大分数。请勿把AI编写的同伴分析说成原卷内容。只输出诊断反馈，不要生成迁移题。"},{"role":"user",content:"原卷题目："+examBank[state.concept].title+"\\n原题来源："+examBank[state.concept].url+"\\n同伴分析："+state.initial+"\\n对话："+JSON.stringify(state.history)+"\\n学生诊断："+JSON.stringify(state.diagnosis)}]);}else{feedback="内置体验模式：你已提交对同伴推理的诊断。请核对自己是否指出了具体漏洞、说明了相关公式/条件，并给出严谨的修正。连接模型后可获得逐项反馈。";}addMsg("ai",feedback,"诊断反馈");state.report=feedback;
+let transfer;if($("apiKey").value.trim()){transfer=await callAI([{role:"system",content:"你是高中"+state.subject+"教师。围绕概念“"+state.concept+"”设计一道全新的独立迁移题。题目应改变情境或条件，考查相同核心原理，难度适中偏上，数据完整、可独立作答。不要复制刚才原卷题，不要给答案。开头注明“AI生成迁移练习（非真题）”。只输出题目。"},{"role":"user",content:"原卷题目："+examBank[state.concept].title+"\\n学生诊断："+JSON.stringify(state.diagnosis)}]);}else{transfer=({
+"理想气体状态变化":"AI生成迁移练习（非真题）\\n一定质量的理想气体经历一个缓慢变化过程，初态为p₁、V₁、T₁，末态为p₂、V₂、T₂。请写出状态方程，并分析：若温度保持不变而体积增大，压强如何变化？气体内能是否变化？说明判断依据。",
+"牛顿第二定律与连接体":"AI生成迁移练习（非真题）\\n水平面上有质量为m₁、m₂的两个物块由轻绳连接，受到水平拉力F作用并一起运动，忽略摩擦。请分别选取整体和单个物块为研究对象，求系统加速度及绳中张力，并说明两种受力分析如何相互验证。",
+"概率与统计":"AI生成迁移练习（非真题）\\n某服务机构抽查200份合同，记录索赔次数为0次、1次、2次、3次的频数分别为150、30、15、5。每份合同收入0.5万元，前三次每次赔付0.6万元，第三次以后不再赔付。请用样本频率估计索赔次数不少于2次的概率，并计算单份合同利润的数学期望。",
+"导数及其应用":"AI生成迁移练习（非真题）\\n设函数f(x)=ln(x+1)/(x+2)，x>−1。请利用导数判断函数的单调区间，并写出曲线上任一点处切线的方程。进一步说明，判断切线是否经过原点需要检查什么条件。"
+})[state.concept];}
+state.transfer=transfer;$("transferQuestion").textContent=transfer+"\\n\\n（本题为本 Demo 生成的迁移练习，不是高考原题。）";setPhase(4);$("notice").textContent="诊断反馈已生成。现在请独立完成迁移练习；可以输入公式、上传图片或 PDF。";}catch(e){addMsg("ai","评价请求失败："+e.message+"。请重试提交。");}finally{setBusy(false)}}
+async function readAttachments(files){state.attachments=[];$("attachmentPreview").innerHTML="";for(const file of files){const item={name:file.name,type:file.type||"",text:"",dataUrl:null};if(file.type.startsWith("image/")){item.dataUrl=await new Promise((resolve,reject)=>{const fr=new FileReader();fr.onload=()=>resolve(fr.result);fr.onerror=reject;fr.readAsDataURL(file)});}else if(file.type==="application/pdf"||file.name.toLowerCase().endsWith(".pdf")){if(!window.pdfjsLib)throw new Error("PDF 解析组件未加载，请稍后重试，或将 PDF 转为图片上传。");const buf=await file.arrayBuffer();const pdf=await pdfjsLib.getDocument({data:buf}).promise;let pages=[];for(let p=1;p<=pdf.numPages;p++){const page=await pdf.getPage(p);const tc=await page.getTextContent();pages.push(tc.items.map(x=>x.str).join(" "));}item.text="[PDF附件："+file.name+"]\\n"+pages.join("\\n");}else{item.text="[文本附件："+file.name+"]\\n"+await file.text();}state.attachments.push(item);const div=document.createElement("div");div.className="attachment-item";if(item.dataUrl){const img=document.createElement("img");img.src=item.dataUrl;div.appendChild(img)}const label=document.createElement("span");label.textContent=file.name+" · "+(item.dataUrl?"图片":item.text.length+"字已读取");div.appendChild(label);$("attachmentPreview").appendChild(div);}}
+async function submitTransfer(){const ans=$("transferAnswer").value.trim(),formula=$("transferFormula").value.trim();if(!ans&&!formula&&!state.attachments.length){$("notice").textContent="请至少填写文字、公式或上传一份附件。";return}const plain="学生文字答案："+(ans||"未填写")+"\\n公式/LaTeX："+(formula||"未填写")+"\\n附件文字内容："+state.attachments.filter(x=>x.text).map(x=>x.text).join("\\n");addMsg("student",plain+(state.attachments.length?"\\n附件："+state.attachments.map(x=>x.name).join("、"):""));setBusy(true);try{let final;if($("apiKey").value.trim()){const content=[{type:"text",text:"迁移题："+state.transfer+"\\n"+plain+"\\n此前诊断："+JSON.stringify(state.diagnosis)+"\\n请评价学生的概念理解、逻辑推理和迁移应用，各0-4分，解释评分依据，指出正确与待改进之处，并给出参考解答。"}];state.attachments.filter(x=>x.dataUrl).forEach(x=>content.push({type:"image_url",image_url:{url:x.dataUrl}}));final=await callAI([{role:"system",content:"你是高中"+state.subject+"教师。请根据题目和学生文字、公式及附件作答情况进行严谨评价。若图片内容无法辨认，请明确说明，不要猜测。"},{"role":"user",content}]);}else{final="你已提交独立迁移作答。当前未连接模型，系统不会自动识别图片或评分；你可以在课程展示时展示已上传的附件。请对照教材或教师提供的参考解答检查推理。";}addMsg("ai",final,"独立迁移反馈");$("reportArea").classList.remove("hidden");$("reportArea").innerHTML="<h3>本轮学习完成</h3><p>你经历了诊断性提问、错误识别、解释修正和独立迁移四个关键学习活动。</p><p style='margin-top:12px;white-space:pre-wrap'>"+escapeHtml(final)+"</p><button class='btn secondary' style='margin-top:12px' onclick='window.print()'>打印本轮记录</button>";setPhase(5);$("notice").textContent="本轮结束。建议回顾：哪些问题最有效？你最初是否也存在与同伴相似的理解偏差？";}catch(e){addMsg("ai","迁移评价失败："+e.message)}finally{setBusy(false)}}
 function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
-const conceptsByLevel={"初中":{"物理":["浮力","串联与并联电路"],"化学":["质量守恒定律","溶解度"],"生物":["光合作用","细胞呼吸"],"数学":["一次函数","相似三角形"]},"高中":{"物理":["牛顿第二定律","浮力"],"化学":["酸碱中和反应","质量守恒定律"],"生物":["显性与隐性遗传","光合作用"],"数学":["一元二次方程","一次函数"]}};
-function fillConcepts(){const subject=$("subject").value,level=$("level").value;const el=$("concept");el.innerHTML="";(conceptsByLevel[level][subject]||[]).forEach(v=>{const o=document.createElement("option");o.value=v;o.textContent=v;el.appendChild(o)});}
-$("subject").addEventListener("change",fillConcepts);$("level").addEventListener("change",fillConcepts);fillConcepts();
-$("startBtn").addEventListener("click",start);$("sendBtn").addEventListener("click",send);$("submitDiagnosis").addEventListener("click",submitDiagnosis);$("submitTransfer").addEventListener("click",submitTransfer);$("message").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send()}});$("apiKey").addEventListener("input",()=>{$("modePill").textContent=$("apiKey").value.trim()?"模型连接待测试":"体验模式"});$("loadModelsBtn").addEventListener("click",loadModels);$("testApiBtn").addEventListener("click",testApi);
+const conceptsBySubject={"物理":["理想气体状态变化","牛顿第二定律与连接体"],"数学":["概率与统计","导数及其应用"]};
+function fillConcepts(){const subject=$("subject").value,el=$("concept");el.innerHTML="";(conceptsBySubject[subject]||[]).forEach(v=>{const o=document.createElement("option");o.value=v;o.textContent=v;el.appendChild(o)});state.subject=subject;state.concept=el.value;}
+$("subject").addEventListener("change",fillConcepts);fillConcepts();
+$("startBtn").addEventListener("click",start);$("sendBtn").addEventListener("click",send);$("submitDiagnosis").addEventListener("click",submitDiagnosis);$("submitTransfer").addEventListener("click",submitTransfer);$("transferFiles").addEventListener("change",async e=>{try{await readAttachments([...e.target.files]);$("notice").textContent="附件已添加。提交时将随答案一起发送。";}catch(err){$("notice").textContent="附件读取失败："+err.message;}});$("message").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send()}});$("apiKey").addEventListener("input",()=>{$("modePill").textContent=$("apiKey").value.trim()?"模型连接待测试":"体验模式"});$("loadModelsBtn").addEventListener("click",loadModels);$("testApiBtn").addEventListener("click",testApi);
 const finish=document.createElement("button");finish.id="finishChatBtn";finish.className="btn secondary hidden";finish.textContent="我准备好诊断了";finish.addEventListener("click",()=>{setPhase(2);$("notice").textContent="请在下方写出你的诊断。AI 暂时不会替你公布正确答案。"});$("composerActions");document.querySelector(".composer-actions").appendChild(finish);
 </script>
 </body>
