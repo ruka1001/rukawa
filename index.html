@@ -78,7 +78,7 @@ footer{max-width:1120px;margin:0 auto;padding:0 20px 30px;color:#8a96a4;font-siz
     <div id="originalQuestionCard" class="task-card hidden">
       <div class="original-head"><div><h3 id="originalTitle">高考原卷题目</h3><div class="hint" id="originalMeta"></div></div><a id="originalLink" href="#" target="_blank" rel="noopener">查看原卷 PDF（备用）</a></div>
       <div id="originalQuestionBody" class="question-body"></div>
-      <p class="hint" style="margin-top:8px">题干与选项直接呈现在网页中，便于阅读和互动；可通过右上角链接核对完整原卷。下方同伴分析为本 Demo 编写的教学示例，不属于原卷内容。</p>
+      <p class="hint" id="questionSourceNote" style="margin-top:8px">题干与选项直接呈现在网页中，便于阅读和互动。下方同伴分析为教学设计内容，不属于原卷内容。</p>
     </div>
     <div class="chat" id="chat" aria-live="polite">
      <div class="msg"><div class="avatar">AI</div><div class="bubble"><div class="who">装懂同伴</div>嗨！我已经学会这个概念啦。你可以随便考考我，我觉得自己肯定能答对！</div></div>
@@ -206,7 +206,7 @@ function pickQuestion(concept){const pool=questionPools[concept]||[examBank[conc
 function showOriginalQuestion(){
  const q=state.activeQuestion||examBank[state.concept];if(!q)return;
  $("originalQuestionCard").classList.remove("hidden");
- $("originalTitle").textContent=q.title;$("originalMeta").textContent=q.meta;$("originalLink").textContent=q.meta.includes("非真题")?"原创练习 · 无原卷链接":"查看原卷 PDF（备用）";$("originalLink").style.pointerEvents=q.meta.includes("非真题")?"none":"auto";$("originalLink").style.textDecoration=q.meta.includes("非真题")?"none":"underline";$("originalLink").style.color=q.meta.includes("非真题")?"#687789":"#315f9f";
+ $("originalTitle").textContent=q.title;$("originalMeta").textContent=q.meta;$("originalLink").textContent=q.meta.includes("非真题")?"原创练习 · 无原卷链接":"查看原卷 PDF（备用）";$("originalLink").style.pointerEvents=q.meta.includes("非真题")?"none":"auto";$("originalLink").style.textDecoration=q.meta.includes("非真题")?"none":"underline";$("originalLink").style.color=q.meta.includes("非真题")?"#687789":"#315f9f";$("questionSourceNote").textContent=q.meta.includes("非真题")?"本题为原创变式练习，不是高考真题。下方同伴分析为教学设计内容。":"题干与选项直接呈现在网页中；可通过右上角链接核对原卷。下方同伴分析为教学设计内容，不属于原卷内容。";
  $("originalLink").href=q.url+"#page="+q.page;
  $("originalQuestionBody").innerHTML=q.body;
 }
