@@ -206,7 +206,7 @@ function pickQuestion(concept){const pool=questionPools[concept]||[examBank[conc
 function showOriginalQuestion(){
  const q=state.activeQuestion||examBank[state.concept];if(!q)return;
  $("originalQuestionCard").classList.remove("hidden");
- $("originalTitle").textContent=q.title;$("originalMeta").textContent=q.meta;$("originalLink").textContent=q.meta.includes("非真题")?"查看题目资源":"查看原卷 PDF（备用）";
+ $("originalTitle").textContent=q.title;$("originalMeta").textContent=q.meta;$("originalLink").textContent=q.meta.includes("非真题")?"原创练习 · 无原卷链接":"查看原卷 PDF（备用）";$("originalLink").style.pointerEvents=q.meta.includes("非真题")?"none":"auto";$("originalLink").style.textDecoration=q.meta.includes("非真题")?"none":"underline";$("originalLink").style.color=q.meta.includes("非真题")?"#687789":"#315f9f";
  $("originalLink").href=q.url+"#page="+q.page;
  $("originalQuestionBody").innerHTML=q.body;
 }
