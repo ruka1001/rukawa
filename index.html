@@ -113,8 +113,8 @@ footer{max-width:1120px;margin:0 auto;padding:0 20px 30px;color:#8a96a4;font-siz
     </div>
     <div id="transferArea" class="task-card hidden">
       <h3>独立迁移挑战</h3>
-      <div class="hint" id="transferSource" style="margin-bottom:8px"></div><a id="transferLink" href="#" target="_blank" rel="noopener" style="font-size:12px;color:var(--blue)">查看原卷</a>
-      <p class="hint" style="margin:8px 0">这是一道同学科的真实试题（跨考点），保留原卷题干与来源；不再由 AI 临时编题。</p>
+      <div class="hint" id="transferSource" style="margin-bottom:8px"></div><a id="transferLink" href="#" target="_blank" rel="noopener" style="font-size:12px;color:var(--blue)">需要核对时查看原题来源（可选）</a>
+      <p class="hint" style="margin:8px 0">本题与刚才学习的概念相同。原题来源仅供需要核对时查看，不会自动要求下载或另存原卷。</p>
       <div id="transferQuestion" class="question-body"></div>
       <div class="field" style="margin-top:12px"><label>写下你的思路或答案</label><textarea id="transferAnswer" placeholder="可以用普通文字写思路和计算过程，不需要输入 LaTeX 公式。"></textarea></div>
       <div class="field"><label>上传手写过程或草稿（选填）</label><input id="transferFiles" type="file" accept="image/*,.pdf,.txt,.md" multiple/><div class="hint">也可以拍照上传手写解题过程；公式不用专门转换成 LaTeX。</div><div id="attachmentPreview" class="attachment-preview"></div></div>
@@ -238,6 +238,7 @@ const examBank={
  title:"2024年普通高中学业水平等级性考试（北京卷）物理第3题",
  meta:"2024年北京高考物理真题 · 第一部分第3题",
  url:"https://cdn.zgkao.com/17199700271072024%E5%8C%97%E4%BA%AC%E9%AB%98%E8%80%83%E7%9C%9F%E9%A2%98%E7%89%A9%E7%90%86%EF%BC%88%E6%95%99%E5%B8%88%E7%89%88%EF%BC%89.pdf",
+ sourceUrl:"https://gaokao.eol.cn/shiti/wl/202407/t20240702_2621064.shtml",
  page:1,
  body:`<p>一个气泡从恒温水槽的底部缓慢上浮，将气泡内的气体视为理想气体，且气体分子个数不变，外界大气压不变。在上浮过程中气泡内气体（　　）</p><div class="q-options"><div>A．内能变大</div><div>B．压强变大</div><div>C．体积不变</div><div>D．从水中吸热</div></div>`,
  analysis:"我觉得这题主要看气泡上浮时外界压强的变化。题目说水槽恒温、气体分子数不变，所以我会用理想气体状态方程分析。气泡上升时体积会变大，温度保持不变，因此内能没有变化。我的理解是，气体膨胀时外界对气体做功，所以气体需要向外放热；这应该能解释它上浮过程中的能量变化。"
@@ -264,6 +265,7 @@ const examBank={
  title:"2024年北京市高考数学第18题",
  meta:"2024年北京高考数学真题 · 第18题",
  url:"https://www.bjxhbt.com/m/a51b7a995b3f49b28188e4270fd73e88_20240606111435.pdf",
+ sourceUrl:"https://gaokao.eol.cn/shiti/sx/202406/t20240612_2615969.shtml",
  page:4,
  body:`<p>某保险公司为了了解该公司某种保险产品的索赔情况，从合同保险期限届满的保单中随机抽取1000份，记录并整理这些保单的索赔情况，获得数据如下表：</p><table><thead><tr><th>索赔次数</th><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th></tr></thead><tbody><tr><th>保单份数</th><td>800</td><td>100</td><td>60</td><td>30</td><td>10</td></tr></tbody></table><p>假设：一份保单的保费为0.4万元；前三次索赔时，保险公司每次赔偿0.8万元；第四次索赔时，保险公司赔偿0.6万元。假设不同保单的索赔次数相互独立。用频率估计概率。</p><div class="q-part">（1）估计一份保单索赔次数不少于2的概率；</div><div class="q-part">（2）一份保单的毛利润定义为这份保单的保费与赔偿总金额之差。<br/>（i）记 <span class="formula">X</span> 为一份保单的毛利润，估计 <span class="formula">E(X)</span>；<br/>（ii）如果无索赔的保单的保费减少4%，有索赔的保单的保费增加20%，试比较这种情况下一份保单毛利润的数学期望估计值与（i）中 <span class="formula">E(X)</span> 估计值的大小。（结论不要求证明）</div>`,
  analysis:"我会先用样本频率估计各类保单的索赔概率，再计算毛利润的数学期望。表格里四次索赔的保单只有10份，占比很低；计算时我倾向于把每次赔偿都按0.8万元处理，这样能统一计算前三次赔偿的支出。第四次赔偿金额与前三次略有不同，但它出现的频率较低，我觉得对期望值的影响可以先忽略。"
@@ -294,17 +296,76 @@ const authoredVariants={
 "椭圆与解析几何":{title:"概念变式练习（非真题）：椭圆参数关系",meta:"原创练习 · a、b、c与离心率",url:"https://www.zktiku.com.cn/document/realtopic",page:1,body:"<p>已知椭圆 x²/25+y²/9=1。求长半轴、短半轴、焦半距和离心率；若点P在椭圆上，说明如何利用椭圆定义判断点P到两个焦点的距离之和。</p><p class='hint'>本题为原创概念练习，不是高考真题。</p>",analysis:"由标准方程可知a=5、b=3，所以c²=a²-b²=16，焦半距c=4，离心率e=4/5。椭圆定义中，点到两个焦点距离之和等于长轴长度。我觉得这里也可以把焦半距当成焦点到椭圆中心的距离，因此两段距离之和应该接近4。"},
 "导数及其应用":{title:"概念变式练习（非真题）：导数与切线",meta:"原创练习 · 导数、单调性与切线",url:"https://www.zktiku.com.cn/document/realtopic",page:1,body:"<p>设函数 f(x)=x²−4x+3。求函数的单调区间，并写出曲线在 x=1 处的切线方程。进一步判断该切线是否经过原点。</p><p class='hint'>本题为原创概念练习，不是高考真题。</p>",analysis:"函数导数为f'(x)=2x−4，所以x小于2时递减、大于2时递增。x=1处函数值为0，导数为-2，切线方程是y=-2(x-1)。我认为这条切线经过原点，因为切点的函数值就是0，切点在x轴上。"}
 };
+const transferBank={
+"理想气体状态变化":[{
+ title:"2025年云南高考物理第9题",
+ meta:"2025年云南高考物理真题 · 第9题 · 理想气体状态变化",
+ sourceUrl:"https://zy.21cnjy.com/23246051",
+ url:"https://zy.21cnjy.com/23246051",
+ page:1,figure:true,
+ body:`<p>图甲为伽利略发明的温度计原理示意图。硬质玻璃泡 a 内封有一定质量的气体（视为理想气体），与 a 相连的 b 管插在水槽中固定，b 管中液面高度会随环境温度变化而变化。设 b 管的体积与 a 泡的体积相比可忽略不计，在标准大气压下，b 管上的刻度可以直接读出环境温度。下列说法正确的是（　　）</p><div class="q-options"><div>A．环境温度升高时，b 管中液面升高</div><div>B．环境温度降低时，b 管中液面升高</div><div>C．水槽中的水少量蒸发后，温度测量值偏小</div><div>D．水槽中的水少量蒸发后，温度测量值偏大</div></div><p class="hint">原题配有温度计结构示意图，请查看上方原题来源页面。</p>`,
+ analysis:""
+}],
+"牛顿第二定律与连接体":[{
+ title:"2025年江苏高考物理第10题",
+ meta:"2025年江苏高考物理真题 · 第10题 · 木箱与物块系统",
+ sourceUrl:"https://zy.21cnjy.com/23355441",
+ url:"https://zy.21cnjy.com/23355441",
+ page:1,figure:true,
+ body:`<p>如图所示，弹簧一端固定，另一端与光滑水平面上的木箱相连，箱内放置一小物块，物块与木箱之间有摩擦。压缩弹簧并由静止释放，释放后物块在木箱上有滑动，滑动过程中不与木箱前后壁发生碰撞，不计空气阻力，则（　　）</p><div class="q-options"><div>A．释放瞬间，物块加速度为零</div><div>B．物块和木箱最终仍有相对运动</div><div>C．木箱第一次到达最右端时，物块速度为零</div><div>D．物块和木箱的速度第一次相同前，物块受到的摩擦力不变</div></div><p class="hint">原题配有木箱、弹簧和物块示意图，请查看上方原题来源页面。</p>`,
+ analysis:""
+}],
+"理想变压器":[{
+ title:"2025年云南高考物理第8题",
+ meta:"2025年云南高考物理真题 · 第8题 · 理想变压器",
+ sourceUrl:"https://zy.21cnjy.com/23246051",
+ url:"https://zy.21cnjy.com/23246051",
+ page:1,figure:true,
+ body:`<p>电动汽车充电桩的供电变压器（视为理想变压器）示意图如图所示。变压器原线圈的匝数为 <span class="formula">n_1</span>，输入电压 <span class="formula">U_1=1.1\,\text{kV}</span>；两副线圈的匝数分别为 <span class="formula">n_2</span> 和 <span class="formula">n_3</span>，输出电压 <span class="formula">U_2=U_3=220\,\text{V}</span>。当 I、II 区充电桩同时工作时，两副线圈的输出功率分别为 7.0 kW 和 3.5 kW，下列说法正确的是（　　）</p><div class="q-options"><div>A．<span class="formula">n_1:n_2=5:1</span></div><div>B．<span class="formula">n_1:n_3=1:5</span></div><div>C．变压器的输入功率为 10.5 kW</div><div>D．两副线圈输出电压最大值均为 220 V</div></div><p class="hint">原题配有多副线圈变压器示意图，请查看上方原题来源页面。</p>`,
+ analysis:""
+}],
+"概率与统计":[{
+ title:"2025年北京高考数学第18题",
+ meta:"2025年北京高考数学真题 · 第18题 · 概率与数学期望",
+ sourceUrl:"https://zy.21cnjy.com/23188715",
+ url:"https://zy.21cnjy.com/23188715",
+ page:1,figure:false,
+ body:`<p>某次考试中，只有一道单项选择题考查了某个知识点，甲、乙两校的高一年级学生都参加了这次考试。为了解学生对该知识点的掌握情况，随机抽查了甲、乙两校高一年级各 100 名学生该题的答题数据，其中甲校学生选择正确的人数为 80，乙校学生选择正确的人数为 75。假设学生之间答题相互独立，用频率估计概率。</p><div class="q-part">（1）估计甲校高一年级学生该题选择正确的概率。</div><div class="q-part">（2）从甲、乙两校高一年级学生中各随机抽取 1 名，设 X 为这 2 名学生中该题选择正确的人数，估计 X=1 的概率及 X 的数学期望。</div><div class="q-part">（3）若甲校学生掌握该知识点时答对概率为 100%，乙校学生掌握该知识点时答对概率为 85%；未掌握的学生均从四个选项中随机选择。设两校学生掌握该知识点的概率估计值分别为 p1、p2，比较 p1 与 p2 的大小。</div>`,
+ analysis:""
+}],
+"椭圆与解析几何":[{
+ title:"2025年北京高考数学第19题",
+ meta:"2025年北京高考数学真题 · 第19题 · 椭圆与解析几何",
+ sourceUrl:"https://zy.21cnjy.com/23188715",
+ url:"https://zy.21cnjy.com/23188715",
+ page:1,figure:false,
+ body:`<p>已知椭圆 <span class="formula">E:\\frac{x^2}{a^2}+\\frac{y^2}{b^2}=1</span>（<span class="formula">a&gt;b&gt;0</span>）的离心率为 <span class="formula">\\frac{\\sqrt2}{2}</span>，椭圆 E 上的点到两个焦点的距离之和为 4。</p><div class="q-part">（1）求椭圆 E 的方程。</div><div class="q-part">（2）设 O 为坐标原点，点 <span class="formula">M(x_0,y_0)</span>（<span class="formula">x_0\\ne0</span>）在椭圆 E 上，直线 <span class="formula">x_0x+2y_0y-4=0</span> 与直线 <span class="formula">y=2</span>、<span class="formula">y=-2</span> 分别交于点 A、B。设三角形 OAM 与 OBM 的面积分别为 <span class="formula">S_1</span>、<span class="formula">S_2</span>，比较 <span class="formula">\\frac{S_1}{S_2}</span> 与 <span class="formula">\\frac{|OA|}{|OB|}</span> 的大小。</div>`,
+ analysis:""
+}],
+"导数及其应用":[{
+ title:"2025年北京高考数学第20题",
+ meta:"2025年北京高考数学真题 · 第20题 · 导数与切线",
+ sourceUrl:"https://zy.21cnjy.com/23188715",
+ url:"https://zy.21cnjy.com/23188715",
+ page:1,figure:false,
+ body:`<p>已知函数 f(x) 的定义域为 <span class="formula">(-1,+\\infty)</span>，<span class="formula">f(0)=0</span>，导函数 <span class="formula">f'(x)=\\frac{\\ln(1+x)}{1+x}</span>，设直线 l1 是曲线 y=f(x) 在点 <span class="formula">A(a,f(a))</span>（<span class="formula">a\\ne0</span>）处的切线。</p><div class="q-part">（1）求 <span class="formula">f'(x)</span> 的最大值。</div><div class="q-part">（2）当 <span class="formula">-1&lt;a&lt;0</span> 时，证明：除切点 A 外，曲线 y=f(x) 在直线 l1 的上方。</div><div class="q-part">（3）设过点 A 的直线 l2 与直线 l1 垂直，l1、l2 与 x 轴交点的横坐标分别为 x1、x2，若 a&gt;0，求 <span class="formula">\\frac{2a-x_2-x_1}{x_2-x_1}</span> 的取值范围。</div>`,
+ analysis:""
+}]
+};
 const questionPools=Object.fromEntries(Object.keys(examBank).map(k=>[k,[examBank[k]]]));
 function pickQuestion(concept){const pool=questionPools[concept]||[examBank[concept]];const last=localStorage.getItem("lastQuestion_"+concept);let choices=pool.filter(q=>q.title!==last);if(!choices.length)choices=pool;const q=choices[Math.floor(Math.random()*choices.length)];localStorage.setItem("lastQuestion_"+concept,q.title);return q;}
 
-function renderQuestion(containerId,q){
+function renderQuestion(containerId,q,mode="original"){
  const box=$(containerId);box.innerHTML=q.body;
  if(q.figure){
-  const frame=document.createElement("iframe");frame.src=q.url+"#page="+(q.page||1)+"&toolbar=0&navpanes=0";
-  frame.title=q.title+"原卷页面及配图";frame.loading="lazy";
+  const frame=document.createElement("iframe");
+  frame.src=mode==="transfer"?(q.sourceUrl||q.url):(q.url+"#page="+(q.page||1)+"&toolbar=0&navpanes=0");
+  frame.title=q.title+"原题及配图";frame.loading="lazy";
   frame.style.cssText="width:100%;height:520px;border:1px solid #dfe6ee;border-radius:10px;margin-top:14px;background:#f7f9fb";
   box.appendChild(frame);
-  const note=document.createElement("div");note.className="hint";note.textContent="上方为原卷对应页面，包含题目原图；如果浏览器未能内嵌显示，请点击原卷链接查看。";box.appendChild(note);
+  const note=document.createElement("div");note.className="hint";
+  note.textContent=mode==="transfer"?"上方为试题来源页面，包含原题配图；如页面未能内嵌显示，可使用上方可选来源链接。":"上方为原卷页面，包含题目原图；原卷链接仅供需要时查看。";
+  box.appendChild(note);
  }
  if(window.MathJax?.typesetPromise)renderMessageMath(box);
 }
@@ -420,13 +481,14 @@ async function prepareDiagnosisQuiz(){
  }catch(e){state.diagnosisQuiz=fallbackDiagnosisQuiz();renderDiagnosisQuiz(state.diagnosisQuiz);$("notice").textContent="个性化选择题暂时未能生成，已切换为简明诊断题；仍然可以直接选择提交。";}
 }
 function pickTransferQuestion(){
- const keys=(conceptsBySubject[state.subject]||[]).filter(k=>k!==state.concept&&examBank[k]);
- if(!keys.length)return state.activeQuestion;
- const previous=localStorage.getItem("lastTransfer_"+state.subject);
- let pool=keys.filter(k=>k!==previous);if(!pool.length)pool=keys;
- const key=pool[Math.floor(Math.random()*pool.length)];
- localStorage.setItem("lastTransfer_"+state.subject,key);
- return {...examBank[key],concept:key};
+ const pool=transferBank[state.concept]||[];
+ if(!pool.length)return null;
+ const previous=localStorage.getItem("lastTransfer_"+state.concept);
+ let choices=pool.filter(q=>q.title!==previous);
+ if(!choices.length)choices=pool;
+ const q=choices[Math.floor(Math.random()*choices.length)];
+ localStorage.setItem("lastTransfer_"+state.concept,q.title);
+ return {...q,concept:state.concept};
 }
 async function submitDiagnosis(){
  const answers=[];
@@ -446,9 +508,17 @@ async function submitDiagnosis(){
   ]);
   addMsg("ai",feedback,"诊断反馈");state.report=feedback;
   state.transfer=pickTransferQuestion();
-  $("transferSource").textContent=state.transfer.meta+" · 原卷第"+state.transfer.page+"页";
-  $("transferLink").href=state.transfer.url+"#page="+(state.transfer.page||1);
-  renderQuestion("transferQuestion",state.transfer);
+  if(!state.transfer){
+   $("transferArea").classList.add("hidden");
+   setPhase(5);
+   $("reportArea").classList.remove("hidden");
+   $("reportArea").innerHTML="<h3>本轮诊断已完成</h3><p>你已经完成同伴错误诊断。这个概念目前还没有第二道经过核实的同概念真题，因此暂不拿其他概念的题目冒充迁移练习。题库补充后即可开放。</p>";
+   $("notice").textContent="本轮诊断已完成！这个概念的第二道真实迁移题还在补充中。我们不拿别的概念来凑数。";
+   return;
+  }
+  $("transferSource").textContent=state.transfer.meta;
+  $("transferLink").href=state.transfer.sourceUrl||state.transfer.url;
+  renderQuestion("transferQuestion",state.transfer,"transfer");
   setPhase(4);
   $("notice").textContent="诊断反馈已生成。接下来是一道同学科真实试题，换个考点检验你的独立分析能力。";
  }catch(e){addMsg("ai","评价请求失败："+e.message+"。请重试提交。");}
