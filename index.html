@@ -232,7 +232,7 @@ const systemPrompt=()=>`你是面向高中学生的${state.subject}“装懂同�
 5. 如果学生的问题指出了一个具体反例或推理矛盾，你要尝试解释/辩护，但不能无视他的问题；可以承认“这个情况我还没考虑到”，然后提出一个可检验的解释。
 6. 每次回答通常3—6句，包含针对问题的回应和至少一个原题细节；措辞审慎自然，可使用“我倾向于”“在这组条件下”“看起来可以”等表达，不要依靠绝对化措辞制造错误。
 7. 不要伪造题目中不存在的数据。若原题没有给出某个量，要明确说题目未提供，不要编造。
-8. 学生提交诊断后，后续评价由系统处理。只输出自然中文。\n9. 数学和物理公式必须使用规范 LaTeX，并用 \\( ... \\) 包裹行内公式、用 \\[ ... \\] 包裹独立公式；例如写成 \\(p_{\\text{外}}\\Delta V\\)。分隔符前只能有一个反斜杠；下标必须写成 _{...}，不要写成 \\_{...}；不要把公式裸写成代码，也不要用“V”“frac(1)”等替代上下标、分数或希腊字母。普通文字不要放进公式环境。`;
+8. 学生提交诊断后，后续评价由系统处理。只输出自然中文。\n9. 数学和物理公式必须使用规范 LaTeX，并用 \\( ... \\) 包裹行内公式、用 \\[ ... \\] 包裹独立公式；例如写成 \\(p_{\\text{外}}\\Delta V\\)。分隔符前只能有一个反斜杠；下标必须写成 _{...}，不要写成 \\_{...}；不要把公式裸写成代码，也不要用“V”“frac(1)”等替代上下标、分数或希腊字母。普通文字不要放进公式环境。\\n10. 当学生的问题已经指出核心错误、而你确实已经解释出正确原理时，在回答最后另起一行输出标记 [READY_FOR_DIAGNOSIS]；只有真正完成纠正时才输出，不要提前输出。`;
 const examBank={
 "理想气体状态变化":{
  title:"2024年普通高中学业水平等级性考试（北京卷）物理第3题",
@@ -317,8 +317,21 @@ function showOriginalQuestion(){
 }
 async function start(){state.subject=$("subject").value;state.concept=$("concept").value;state.history=[];state.turns=0;state.hints=0;state.initial=null;state.diagnosis=null;state.diagnosisQuiz=null;state.aiCorrected=false;state.report=null;state.attachments=[];state.earnedDiagnosis=false;state.earnedTransfer=false;state.activeQuestion=pickQuestion(state.concept);$("chat").innerHTML="";$("welcome").classList.add("hidden");$("reportArea").classList.add("hidden");$("transferArea").classList.add("hidden");$("diagnosisArea").classList.add("hidden");$("diagnosisNote").value="";$("transferAnswer").value="";$("transferFiles").value="";$("attachmentPreview").innerHTML="";showOriginalQuestion();setPhase(1);addMsg("student",`我想考考你：${state.concept}。请你结合上方题目，解释你的解题思路。`);setBusy(true);
 try{const first=state.activeQuestion.analysis;state.initial=first;state.history=[{role:"assistant",content:first}];addMsg("ai",first,"同伴对本轮题目的分析");$("notice").textContent="题目已载入。当前选择模型："+getModel()+"。请结合上方题目，追问同伴分析中的依据与逻辑。";}catch(e){addMsg("ai","载入题目时遇到问题："+e.message);setPhase(0)}finally{setBusy(false)}}
-async function send(){const msg=$("message").value.trim();if(!msg||state.phase!==1||state.busy)return;$("message").value="";addMsg("student",msg);state.turns++;state.history.push({role:"user",content:msg});setBusy(true);try{let answer;if(true){answer=await callAI([{role:"system",content:systemPrompt()},...state.history]);}else{answer=mockReply(msg,state.turns)}state.history.push({role:"assistant",content:answer});addMsg("ai",answer);if(state.turns>=1){$("finishChatBtn").classList.remove("hidden");}
-if(state.turns>=2&&state.turns%2===0){$("notice").textContent="想一想：你的问题是否触及了关键条件、概念机制或证据？如果还没有，可以继续追问。"}if(/我认为|漏洞|错误|不对|应该是|因为|原理/.test(msg)&&state.turns>=2){$("notice").textContent="你似乎开始检验它的解释了。可以继续追问，也可以点击“我准备好诊断了”进入下一步。";$("composerHint").textContent="当你认为已经找到问题时，点击下方按钮提交诊断。";$("finishChatBtn").classList.remove("hidden");}}catch(e){addMsg("ai","这次没有成功回复："+e.message+"。请检查网络、Key 或模型名称后重试。")}finally{setBusy(false)}}
+async function send(){
+ const msg=$("message").value.trim();if(!msg||state.phase!==1||state.busy)return;
+ $("message").value="";addMsg("student",msg);state.turns++;state.history.push({role:"user",content:msg});setBusy(true);
+ try{
+  let answer=await callAI([{role:"system",content:systemPrompt()},...state.history]);
+  if(answer.includes("[READY_FOR_DIAGNOSIS]")){
+   state.aiCorrected=true;answer=answer.replace(/\s*\[READY_FOR_DIAGNOSIS\]\s*$/,"").trim();
+   $("finishChatBtn").textContent="抓到啦！进入诊断 →";
+   $("notice").textContent="哎呀，同伴开始松口了！它已经说出了正确原理。趁热打铁，点击下方按钮完成诊断吧。";
+   $("composerHint").textContent="你已经找到关键线索，可以进入下一阶段了。";
+  }else if(state.turns>=2){$("notice").textContent="你已经追问了几轮。如果觉得漏洞找到了，可以点击下方按钮进入诊断；不确定也可以继续追问。";}
+  state.history.push({role:"assistant",content:answer});addMsg("ai",answer);$("finishChatBtn").classList.remove("hidden");
+ }catch(e){addMsg("ai","这次没有成功回复："+e.message+"。请检查网络、Key 或模型名称后重试。")}
+ finally{setBusy(false)}
+}
 function mockReply(msg,turn){
  const q=msg;
  const replies={
@@ -375,24 +388,97 @@ function mockReply(msg,turn){
  if(fn)return fn();
  return `回到刚才那道关于“${state.concept}”的题目，我当时是根据题目给出的条件“${state.initial.slice(0,90)}”作出判断的。你问的这个问题涉及我推理中的关键一步：我把题目中的这个条件理解成了支持原结论的依据。我的理解是，题目给出的信息已经足以让我这样判断；如果你认为不成立，可以指出具体哪一个条件不能推出我的结论。`;
 }
-async function submitDiagnosis(){const error=$("errorText").value.trim(),reason=$("reasonText").value.trim(),repair=$("repairText").value.trim();if(!error||!reason||!repair){$("notice").textContent="请完成漏洞识别、错误原因和正确解释三个部分。";return}state.diagnosis={error,reason,repair};if(!state.earnedDiagnosis){awardXP(20,"完成漏洞诊断");state.earnedDiagnosis=true;}addMsg("student","我的诊断：\\n漏洞："+error+"\\n原因："+reason+"\\n正确解释："+repair);setBusy(true);try{let feedback;if(true){feedback=await callAI([{role:"system",content:"你是严谨、鼓励性的高中"+state.subject+"教师。依据原题与对话，评价学生的诊断性提问、错误识别和科学解释三个维度，每项0-4分，说明理由，指出遗漏与准确之处。不要直接夸大分数。请勿把AI编写的同伴分析说成原卷内容。只输出诊断反馈，不要生成迁移题。"},{"role":"user",content:"原卷题目："+(state.activeQuestion||examBank[state.concept]).title+"\\n原题来源："+(state.activeQuestion||examBank[state.concept]).url+"\\n同伴分析："+state.initial+"\\n对话："+JSON.stringify(state.history)+"\\n学生诊断："+JSON.stringify(state.diagnosis)}]);}else{feedback="内置体验模式：你已提交对同伴推理的诊断。请核对自己是否指出了具体漏洞、说明了相关公式/条件，并给出严谨的修正。连接模型后可获得逐项反馈。";}addMsg("ai",feedback,"诊断反馈");state.report=feedback;
-let transfer;if(true){transfer=await callAI([{role:"system",content:"你是高中"+state.subject+"教师。围绕概念“"+state.concept+"”设计一道全新的独立迁移题。题目应改变情境或条件，考查相同核心原理，难度适中偏上，数据完整、可独立作答。不要复制刚才原卷题，不要给答案。开头注明“AI生成迁移练习（非真题）”。只输出题目。"},{"role":"user",content:"原卷题目："+examBank[state.concept].title+"\\n学生诊断："+JSON.stringify(state.diagnosis)}]);}else{transfer=({
-"理想气体状态变化":"AI生成迁移练习（非真题）\\n一定质量的理想气体经历一个缓慢变化过程，初态为p₁、V₁、T₁，末态为p₂、V₂、T₂。请写出状态方程，并分析：若温度保持不变而体积增大，压强如何变化？气体内能是否变化？说明判断依据。",
-"牛顿第二定律与连接体":"AI生成迁移练习（非真题）\\n水平面上有质量为m₁、m₂的两个物块由轻绳连接，受到水平拉力F作用并一起运动，忽略摩擦。请分别选取整体和单个物块为研究对象，求系统加速度及绳中张力，并说明两种受力分析如何相互验证。",
-"理想变压器":"AI生成迁移练习（非真题）\\n一台理想变压器原线圈接正弦交流电源，原线圈电压最大值为100√2 V，副线圈匝数是原线圈的1/5。副线圈接一个电阻为10 Ω的纯电阻负载。求副线圈电压的有效值和负载电流，并说明为什么不能直接把原线圈电压最大值代入变压器电压关系。",
-"概率与统计":"AI生成迁移练习（非真题）\\n某服务机构抽查200份合同，记录索赔次数为0次、1次、2次、3次的频数分别为150、30、15、5。每份合同收入0.5万元，前三次每次赔付0.6万元，第三次以后不再赔付。请用样本频率估计索赔次数不少于2次的概率，并计算单份合同利润的数学期望。",
-"椭圆与解析几何":"AI生成迁移练习（非真题）\\n已知椭圆x²/25+y²/9=1。求其焦点坐标和离心率；若过点(0,4)的直线y=kx+4与椭圆交于A、B两点，写出联立后的一元二次方程，并说明如何利用韦达定理表示x_A+x_B与x_Ax_B。",
-"导数及其应用":"AI生成迁移练习（非真题）\\n设函数f(x)=ln(x+1)/(x+2)，x>−1。请利用导数判断函数的单调区间，并写出曲线上任一点处切线的方程。进一步说明，判断切线是否经过原点需要检查什么条件。"
-})[state.concept];}
-state.transfer=transfer;$("transferQuestion").textContent=transfer+"\\n\\n（本题为本 Demo 生成的迁移练习，不是高考原题。）";setPhase(4);$("notice").textContent="诊断反馈已生成。现在请独立完成迁移练习；可以输入公式、上传图片或 PDF。";}catch(e){addMsg("ai","评价请求失败："+e.message+"。请重试提交。");}finally{setBusy(false)}}
+function fallbackDiagnosisQuiz(){
+ return [
+  {question:"同伴的推理最可能存在什么问题？",options:["遗漏了关键条件或公式适用范围","混淆了两个相关概念或物理量","计算、符号或单位处理不当","结论与前面的推理不一致"]},
+  {question:"判断它有问题，最主要应依据什么？",options:["题干给出的条件和数据","相关定义、定律及公式适用条件","题目中的图像、表格或单位信息","用反例检验它的推理是否成立"]},
+  {question:"要把解释修正正确，最重要的做法是什么？",options:["明确研究对象和过程，再逐步分析","先判断公式能否用于当前条件","区分各物理量/数学量的含义和方向","从题目条件重新建立完整推理链"]}
+ ];
+}
+function renderDiagnosisQuiz(questions){
+ const root=$("diagnosisQuiz");root.innerHTML="";
+ questions.forEach((q,i)=>{
+  const section=document.createElement("section");section.className="quiz-question";
+  const title=document.createElement("h4");title.textContent=(i+1)+". "+q.question;section.appendChild(title);
+  q.options.forEach((option,j)=>{
+   const label=document.createElement("label");label.className="quiz-option";
+   const radio=document.createElement("input");radio.type="radio";radio.name="diagnosis_"+i;radio.value=String(j);
+   const span=document.createElement("span");span.textContent=option;label.append(radio,span);section.appendChild(label);
+  });
+  root.appendChild(section);
+ });
+}
+async function prepareDiagnosisQuiz(){
+ $("diagnosisQuiz").innerHTML='<div class="loading"><span class="dot"></span>正在根据刚才的对话出题…</div>';
+ const q=state.activeQuestion;
+ const prompt="为高中"+state.subject+"学生生成3道简短单选诊断题。原题："+q.title+"；题干："+q.body.replace(/<[^>]*>/g," ")+"；同伴最初错误分析："+state.initial+"；追问记录："+JSON.stringify(state.history)+"。三题依次考查：①同伴推理中最关键的错误；②判断错误所依据的科学条件/定律/数据；③最合理的正确解释。每题4个选项，必须紧扣本题，不得泛泛而谈。不要标出正确答案，不要解析。只返回JSON：{\"questions\":[{\"question\":\"...\",\"options\":[\"...\",\"...\",\"...\",\"...\"]},{\"question\":\"...\",\"options\":[\"...\",\"...\",\"...\",\"...\"]},{\"question\":\"...\",\"options\":[\"...\",\"...\",\"...\",\"...\"]}]}。";
+ try{
+  const raw=await callAI([{role:"system",content:"你是严谨的高中"+state.subject+"命题教师。只生成结构正确的JSON，不要Markdown代码块。"},{"role":"user",content:prompt}],0.3);
+  const json=raw.slice(raw.indexOf("{"),raw.lastIndexOf("}")+1),parsed=JSON.parse(json);
+  if(!Array.isArray(parsed.questions)||parsed.questions.length!==3||parsed.questions.some(x=>!x.question||!Array.isArray(x.options)||x.options.length!==4))throw new Error("题目格式不完整");
+  state.diagnosisQuiz=parsed.questions;renderDiagnosisQuiz(state.diagnosisQuiz);
+ }catch(e){state.diagnosisQuiz=fallbackDiagnosisQuiz();renderDiagnosisQuiz(state.diagnosisQuiz);$("notice").textContent="个性化选择题暂时未能生成，已切换为简明诊断题；仍然可以直接选择提交。";}
+}
+function pickTransferQuestion(){
+ const keys=(conceptsBySubject[state.subject]||[]).filter(k=>k!==state.concept&&examBank[k]);
+ if(!keys.length)return state.activeQuestion;
+ const previous=localStorage.getItem("lastTransfer_"+state.subject);
+ let pool=keys.filter(k=>k!==previous);if(!pool.length)pool=keys;
+ const key=pool[Math.floor(Math.random()*pool.length)];
+ localStorage.setItem("lastTransfer_"+state.subject,key);
+ return {...examBank[key],concept:key};
+}
+async function submitDiagnosis(){
+ const answers=[];
+ (state.diagnosisQuiz||[]).forEach((q,i)=>{
+  const selected=document.querySelector('input[name="diagnosis_'+i+'"]:checked');
+  if(selected)answers.push({question:q.question,selected:q.options[Number(selected.value)]});
+ });
+ if(answers.length!==3){$("notice").textContent="还有题目没有选择哦，三道都选完就可以提交啦。";return}
+ const note=$("diagnosisNote").value.trim();state.diagnosis={answers,note};
+ if(!state.earnedDiagnosis){awardXP(20,"完成漏洞诊断");state.earnedDiagnosis=true;}
+ addMsg("student","我的诊断：\\n"+answers.map((a,i)=>(i+1)+". "+a.question+"\\n我的选择："+a.selected).join("\\n")+(note?"\\n补充："+note:""));
+ setBusy(true);
+ try{
+  const feedback=await callAI([
+   {role:"system",content:"你是一位严谨、鼓励性的高中"+state.subject+"教师。根据原题、同伴最初的错误分析、追问记录和用户选择，逐项评价错误识别、科学依据、正确解释。指出准确与需要修正之处，并说明理由。必须直接对用户说‘你’，例如‘你的判断’‘你的依据’，禁止使用‘学生的判断’‘学生的答案’等第三人称表述。不要夸大分数，也不要编造题目内容。只输出反馈。"},
+   {role:"user",content:"真实原题："+state.activeQuestion.title+"\\n来源："+state.activeQuestion.url+"\\n同伴最初分析："+state.initial+"\\n追问记录："+JSON.stringify(state.history)+"\\n你的三项选择："+JSON.stringify(state.diagnosis)}
+  ]);
+  addMsg("ai",feedback,"诊断反馈");state.report=feedback;
+  state.transfer=pickTransferQuestion();
+  $("transferSource").textContent=state.transfer.meta+" · 原卷第"+state.transfer.page+"页";
+  $("transferLink").href=state.transfer.url+"#page="+(state.transfer.page||1);
+  renderQuestion("transferQuestion",state.transfer);
+  setPhase(4);
+  $("notice").textContent="诊断反馈已生成。接下来是一道同学科真实试题，换个考点检验你的独立分析能力。";
+ }catch(e){addMsg("ai","评价请求失败："+e.message+"。请重试提交。");}
+ finally{setBusy(false)}
+}
 async function readAttachments(files){state.attachments=[];$("attachmentPreview").innerHTML="";for(const file of files){const item={name:file.name,type:file.type||"",text:"",dataUrl:null};if(file.type.startsWith("image/")){item.dataUrl=await new Promise((resolve,reject)=>{const fr=new FileReader();fr.onload=()=>resolve(fr.result);fr.onerror=reject;fr.readAsDataURL(file)});}else if(file.type==="application/pdf"||file.name.toLowerCase().endsWith(".pdf")){if(!window.pdfjsLib)throw new Error("PDF 解析组件未加载，请稍后重试，或将 PDF 转为图片上传。");const buf=await file.arrayBuffer();const pdf=await pdfjsLib.getDocument({data:buf}).promise;let pages=[];for(let p=1;p<=pdf.numPages;p++){const page=await pdf.getPage(p);const tc=await page.getTextContent();pages.push(tc.items.map(x=>x.str).join(" "));}item.text="[PDF附件："+file.name+"]\\n"+pages.join("\\n");}else{item.text="[文本附件："+file.name+"]\\n"+await file.text();}state.attachments.push(item);const div=document.createElement("div");div.className="attachment-item";if(item.dataUrl){const img=document.createElement("img");img.src=item.dataUrl;div.appendChild(img)}const label=document.createElement("span");label.textContent=file.name+" · "+(item.dataUrl?"图片":item.text.length+"字已读取");div.appendChild(label);$("attachmentPreview").appendChild(div);}}
-async function submitTransfer(){const ans=$("transferAnswer").value.trim(),formula=$("transferFormula").value.trim();if(!ans&&!formula&&!state.attachments.length){$("notice").textContent="请至少填写文字、公式或上传一份附件。";return}const plain="学生文字答案："+(ans||"未填写")+"\\n公式/LaTeX："+(formula||"未填写")+"\\n附件文字内容："+state.attachments.filter(x=>x.text).map(x=>x.text).join("\\n");addMsg("student",plain+(state.attachments.length?"\\n附件："+state.attachments.map(x=>x.name).join("、"):""));setBusy(true);try{let final;if(true){const content=[{type:"text",text:"迁移题："+state.transfer+"\\n"+plain+"\\n此前诊断："+JSON.stringify(state.diagnosis)+"\\n请评价学生的概念理解、逻辑推理和迁移应用，各0-4分，解释评分依据，指出正确与待改进之处，并给出参考解答。"}];state.attachments.filter(x=>x.dataUrl).forEach(x=>content.push({type:"image_url",image_url:{url:x.dataUrl}}));final=await callAI([{role:"system",content:"你是高中"+state.subject+"教师。请根据题目和学生文字、公式及附件作答情况进行严谨评价。若图片内容无法辨认，请明确说明，不要猜测。"},{"role":"user",content}]);}else{final="你已提交独立迁移作答。当前未连接模型，系统不会自动识别图片或评分；你可以在课程展示时展示已上传的附件。请对照教材或教师提供的参考解答检查推理。";}addMsg("ai",final,"独立迁移反馈");if(!state.earnedTransfer){awardXP(30,"完成独立迁移");state.earnedTransfer=true;completeLearningDay();} $("reportArea").classList.remove("hidden");$("reportArea").innerHTML="<h3>本轮学习完成</h3><p>你经历了诊断性提问、错误识别、解释修正和独立迁移四个关键学习活动。</p><p style='margin-top:12px;white-space:pre-wrap'>"+escapeHtml(final)+"</p><button class='btn secondary' style='margin-top:12px' onclick='window.print()'>打印本轮记录</button>";setPhase(5);$("notice").textContent="本轮结束。建议回顾：哪些问题最有效？你最初是否也存在与同伴相似的理解偏差？";}catch(e){addMsg("ai","迁移评价失败："+e.message)}finally{setBusy(false)}}
+async function submitTransfer(){
+ const ans=$("transferAnswer").value.trim();
+ if(!ans&&!state.attachments.length){$("notice").textContent="请写下一点解题思路，或上传手写草稿后再提交。";return}
+ const plain="你的文字答案："+(ans||"未填写")+"\\n附件文字内容："+state.attachments.filter(x=>x.text).map(x=>x.text).join("\\n");
+ addMsg("student",plain+(state.attachments.length?"\\n附件："+state.attachments.map(x=>x.name).join("、"):""));
+ setBusy(true);
+ try{
+  const content=[{type:"text",text:"真实试题："+state.transfer.title+"\\n试题来源："+state.transfer.url+"\\n题目内容："+state.transfer.body.replace(/<[^>]*>/g," ")+"\\n"+plain+"\\n此前诊断："+JSON.stringify(state.diagnosis)+"\\n请评价你的概念理解、逻辑推理和独立解题过程，说明正确与待改进之处，并给出参考解答。反馈时直接称呼用户为‘你’，不要说‘学生的……’。"}];
+  state.attachments.filter(x=>x.dataUrl).forEach(x=>content.push({type:"image_url",image_url:{url:x.dataUrl}}));
+  const final=await callAI([{role:"system",content:"你是高中"+state.subject+"教师。请根据真实试题和用户文字、附件作答情况进行严谨评价。始终用第二人称‘你’直接反馈。若图片内容无法辨认，请明确说明，不要猜测。不得把这道真实试题说成AI原创题。"},{"role":"user",content}]);
+  addMsg("ai",final,"独立迁移反馈");
+  if(!state.earnedTransfer){awardXP(30,"完成独立迁移");state.earnedTransfer=true;completeLearningDay();}
+  $("reportArea").classList.remove("hidden");
+  $("reportArea").innerHTML="<h3>本轮学习完成</h3><p>你完成了诊断性提问、错误识别、解释修正和真实试题迁移。</p><p style='margin-top:12px;white-space:pre-wrap'>"+escapeHtml(final)+"</p><button class='btn secondary' style='margin-top:12px' onclick='window.print()'>打印本轮记录</button>";
+  setPhase(5);$("notice").textContent="本轮结束。回顾一下：你是否真正抓住了同伴推理中的关键漏洞？";
+ }catch(e){addMsg("ai","迁移评价失败："+e.message)}
+ finally{setBusy(false)}
+}
 function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 const conceptsBySubject={"物理":["理想气体状态变化","牛顿第二定律与连接体","理想变压器"],"数学":["概率与统计","导数及其应用","椭圆与解析几何"]};
 function fillConcepts(){const subject=$("subject").value,el=$("concept");el.innerHTML="";(conceptsBySubject[subject]||[]).forEach(v=>{const o=document.createElement("option");o.value=v;o.textContent=v;el.appendChild(o)});state.subject=subject;state.concept=el.value;}
 $("subject").addEventListener("change",fillConcepts);fillConcepts();
 $("startBtn").addEventListener("click",start);$("sendBtn").addEventListener("click",send);$("submitDiagnosis").addEventListener("click",submitDiagnosis);$("submitTransfer").addEventListener("click",submitTransfer);$("transferFiles").addEventListener("change",async e=>{try{await readAttachments([...e.target.files]);$("notice").textContent="附件已添加。提交时将随答案一起发送。";}catch(err){$("notice").textContent="附件读取失败："+err.message;}});$("message").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send()}});$("apiKey").addEventListener("input",()=>{$("modePill").textContent=$("apiKey").value.trim()?"自定义 API":"内置 AI"});$("modelSelect").addEventListener("change",()=>{$("modelCustom").value="";$("apiHint").textContent="当前选择模型："+getModel();});$("loadModelsBtn").addEventListener("click",loadModels);$("testApiBtn").addEventListener("click",testApi);loadModels();
-const finish=document.createElement("button");finish.id="finishChatBtn";finish.className="btn secondary hidden";finish.textContent="我准备好诊断了";finish.addEventListener("click",()=>{setPhase(2);$("notice").textContent="请在下方写出你的诊断。AI 暂时不会替你公布正确答案。"});$("composerActions");document.querySelector(".composer-actions").appendChild(finish);
+const finish=document.createElement("button");finish.id="finishChatBtn";finish.className="btn secondary hidden";finish.textContent="我准备好诊断了";finish.addEventListener("click",async()=>{setPhase(2);await prepareDiagnosisQuiz();});$("composerActions");document.querySelector(".composer-actions").appendChild(finish);
 </script>
 </body>
 </html>
