@@ -182,7 +182,28 @@ async function loadModels(){
  finally{btn.disabled=false;btn.textContent="刷新可用模型";}
 }
 async function testApi(){try{const answer=await callAI([{role:"user",content:"请只回复：API连接成功"}],0);$("apiHint").textContent="当前模型连接成功："+getModel()+"；回复："+answer.slice(0,100);}catch(e){$("apiHint").textContent="当前模型连接失败："+e.message;}}
-function addMsg(role,text,tag=""){const row=document.createElement("div");row.className="msg "+(role==="student"?"student":"");const av=document.createElement("div");av.className="avatar";av.textContent=role==="student"?"我":"AI";const b=document.createElement("div");b.className="bubble";if(tag){const t=document.createElement("div");t.className="tag";t.textContent=tag;b.appendChild(t)}const who=document.createElement("div");who.className="who";who.textContent=role==="student"?"你":"装懂同伴";b.appendChild(who);const body=document.createElement("div");body.textContent=text;b.appendChild(body);row.append(av,b);$("chat").appendChild(row);$("chat").scrollTop=$("chat").scrollHeight;return body}
+function renderMessageMath(element){
+ const render=()=>{if(window.MathJax?.typesetPromise){window.MathJax.typesetPromise([element]).catch(err=>console.warn("公式排版失败：",err));}};
+ if(window.MathJax?.startup?.promise){window.MathJax.startup.promise.then(render).catch(err=>console.warn("公式引擎启动失败：",err));}
+ else if(document.readyState==="complete"){render();}
+ else{window.addEventListener("load",render,{once:true});}
+}
+function normalizeMathText(value){
+ return String(value??"")
+  .replace(/\\\\+(?=[([])/g,"\\")
+  .replace(/\\_(?=\\{)/g,"_");
+}
+function addMsg(role,text,tag=""){
+ const row=document.createElement("div");row.className="msg "+(role==="student"?"student":"");
+ const av=document.createElement("div");av.className="avatar";av.textContent=role==="student"?"我":"AI";
+ const b=document.createElement("div");b.className="bubble";
+ if(tag){const t=document.createElement("div");t.className="tag";t.textContent=tag;b.appendChild(t)}
+ const who=document.createElement("div");who.className="who";who.textContent=role==="student"?"你":"装懂同伴";b.appendChild(who);
+ const body=document.createElement("div");body.className="message-content";body.textContent=normalizeMathText(text);b.appendChild(body);
+ row.append(av,b);$("chat").appendChild(row);$("chat").scrollTop=$("chat").scrollHeight;
+ if(role!=="student")renderMessageMath(body);
+ return body
+}
 function setBusy(v){state.busy=v;$("sendBtn").disabled=v||state.phase!==1;$("startBtn").disabled=v;$("submitDiagnosis").disabled=v;$("submitTransfer").disabled=v;if(v){$("composerHint").innerHTML='<span class="loading"><span class="dot"></span>同伴正在组织语言…</span>'}else $("composerHint").textContent=state.phase===1?"继续追问，检查它的推理依据。":"当前阶段无需继续提问。"}
 function setPhase(n){state.phase=n;const labels=["阶段一：选择概念，开始挑战","阶段二：诊断性提问","阶段三：定位概念漏洞","阶段四：修正解释","阶段五：独立迁移挑战"];const desc=["选择高中数学或物理概念","通过连续追问检查关键条件、机制或证据","判断它的解释是否存在漏洞","依据科学原理重建正确解释","不依赖 AI，将概念应用到新情境"];$("stageTitle").textContent=labels[n];$("stageDesc").textContent=desc[n];$("statusPill").textContent=["等待开始","对话进行中","等待诊断","修正与反馈","独立完成"][n];[...$("steps").children].forEach((el,i)=>{el.className="step"+(i===n?" active":i<n?" done":"")});$("message").disabled=n!==1;$("sendBtn").disabled=n!==1||state.busy;$("diagnosisArea").classList.toggle("hidden",n!==2);$("transferArea").classList.toggle("hidden",n!==4);$("composer").classList.toggle("hidden",n===0||n>=2);if(n===2)$("notice").textContent="请独立完成诊断。AI 不会替你指出漏洞；如果暂时没有思路，可以回到对话中继续追问。";if(n===4)$("notice").textContent="迁移阶段不提供 AI 提示。请独立完成新情境问题，检验自己是否真正理解。"}
 async function callAI(messages,temperature=.7){
@@ -208,7 +229,7 @@ const systemPrompt=()=>`你是面向高中学生的${state.subject}“装懂同�
 5. 如果学生的问题指出了一个具体反例或推理矛盾，你要尝试解释/辩护，但不能无视他的问题；可以承认“这个情况我还没考虑到”，然后提出一个可检验的解释。
 6. 每次回答通常3—6句，包含针对问题的回应和至少一个原题细节；措辞审慎自然，可使用“我倾向于”“在这组条件下”“看起来可以”等表达，不要依靠绝对化措辞制造错误。
 7. 不要伪造题目中不存在的数据。若原题没有给出某个量，要明确说题目未提供，不要编造。
-8. 学生提交诊断后，后续评价由系统处理。只输出自然中文。\n9. 数学和物理公式必须使用规范 LaTeX，并用 \\( ... \\) 包裹行内公式、用 \\[ ... \\] 包裹独立公式；例如写成 \\(p_{\\text{外}}\\Delta V\\)，不要把公式裸写成代码，也不要用“V”“frac(1)”等替代上下标、分数或希腊字母。普通文字不要放进公式环境。`;
+8. 学生提交诊断后，后续评价由系统处理。只输出自然中文。\n9. 数学和物理公式必须使用规范 LaTeX，并用 \\( ... \\) 包裹行内公式、用 \\[ ... \\] 包裹独立公式；例如写成 \\(p_{\\text{外}}\\Delta V\\)。分隔符前只能有一个反斜杠；下标必须写成 _{...}，不要写成 \\_{...}；不要把公式裸写成代码，也不要用“V”“frac(1)”等替代上下标、分数或希腊字母。普通文字不要放进公式环境。`;
 const examBank={
 "理想气体状态变化":{
  title:"2024年普通高中学业水平等级性考试（北京卷）物理第3题",
