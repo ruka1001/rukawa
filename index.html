@@ -146,7 +146,7 @@ window.MathJax = {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>
 const $=id=>document.getElementById(id);
-// 部署 Cloudflare Worker 后，将其地址填入此处；密钥只保存在 Worker Secret 中。
+// 默认使用腾讯云 CloudBase 内置 AI 服务；密钥仅保存在云端环境变量中。
 const DEFAULT_AI_ENDPOINT="https://zhuangdong-ai-d3gk1l1emc7a66729-1534497242.ap-shanghai.app.tcloudbase.com";
 const DEFAULT_AI_MODEL="deepseek-ai/DeepSeek-V3.2";
 let state={phase:0,subject:"物理",concept:"理想气体状态变化",level:"高中",history:[],turns:0,hints:0,diagnosis:null,initial:null,transfer:null,report:null,busy:false,attachments:[],activeQuestion:null,earnedDiagnosis:false,earnedTransfer:false};
@@ -208,7 +208,7 @@ const systemPrompt=()=>`你是面向高中学生的${state.subject}“装懂同�
 5. 如果学生的问题指出了一个具体反例或推理矛盾，你要尝试解释/辩护，但不能无视他的问题；可以承认“这个情况我还没考虑到”，然后提出一个可检验的解释。
 6. 每次回答通常3—6句，包含针对问题的回应和至少一个原题细节；措辞审慎自然，可使用“我倾向于”“在这组条件下”“看起来可以”等表达，不要依靠绝对化措辞制造错误。
 7. 不要伪造题目中不存在的数据。若原题没有给出某个量，要明确说题目未提供，不要编造。
-8. 学生提交诊断后，后续评价由系统处理。只输出自然中文。`;
+8. 学生提交诊断后，后续评价由系统处理。只输出自然中文。\n9. 数学和物理公式必须使用规范 LaTeX，并用 \\( ... \\) 包裹行内公式、用 \\[ ... \\] 包裹独立公式；例如写成 \\(p_{\\text{外}}\\Delta V\\)，不要把公式裸写成代码，也不要用“V”“frac(1)”等替代上下标、分数或希腊字母。普通文字不要放进公式环境。`;
 const examBank={
 "理想气体状态变化":{
  title:"2024年普通高中学业水平等级性考试（北京卷）物理第3题",
