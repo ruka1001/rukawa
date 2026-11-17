@@ -33,7 +33,7 @@ footer{max-width:1120px;margin:0 auto;padding:0 20px 30px;color:#8a96a4;font-siz
 .badge-pop{display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border-radius:20px;background:#fff4df;color:#94611c;font-size:11px;font-weight:700}
 @media(max-width:600px){.rewardbar{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.rewardtile{padding:10px}.rewardtile strong{font-size:17px}.questline{align-items:flex-start;flex-direction:column}}
 
-</style>
+.message-content{overflow-wrap:anywhere;word-break:normal;line-height:1.8}.message-content mjx-container{max-width:100%;overflow-x:auto;overflow-y:hidden;padding:2px 0}.question-body mjx-container{max-width:100%;overflow-x:auto;overflow-y:hidden}</style>
 </head>
 <body>
 <header>
@@ -129,6 +129,450 @@ footer{max-width:1120px;margin:0 auto;padding:0 20px 30px;color:#8a96a4;font-siz
  </div>
 </main>
 <footer>本 Demo 用于课程展示与学习设计验证。AI 生成内容可能存在错误；完成互动后请以教材、教师或经过审核的学习资料核对科学知识。</footer>
+<script>
+window.MathJax = {
+  tex: {
+    inlineMath: [['\\\\(', '\\\\)'], ['
+<script>
+const $=id=>document.getElementById(id);
+// 部署 Cloudflare Worker 后，将其地址填入此处；密钥只保存在 Worker Secret 中。
+const DEFAULT_AI_ENDPOINT="https://zhuangdong-ai-d3gk1l1emc7a66729-1534497242.ap-shanghai.app.tcloudbase.com";
+const DEFAULT_AI_MODEL="deepseek-ai/DeepSeek-V3.2";
+let state={phase:0,subject:"物理",concept:"理想气体状态变化",level:"高中",history:[],turns:0,hints:0,diagnosis:null,initial:null,transfer:null,report:null,busy:false,attachments:[],activeQuestion:null,earnedDiagnosis:false,earnedTransfer:false};
+const progressKey="zhuangdong_progress_v1";
+let progress=(()=>{try{return JSON.parse(localStorage.getItem(progressKey))||{xp:0,completed:0,streak:0,lastDay:""};}catch(e){return{xp:0,completed:0,streak:0,lastDay:""};}})();
+function saveProgress(){localStorage.setItem(progressKey,JSON.stringify(progress));renderProgress();}
+function renderProgress(){const xp=progress.xp||0;$("xpValue").textContent=xp;$("levelValue").textContent=Math.floor(xp/100)+1;$("xpFill").style.width=(xp%100)+"%";$("streakValue").textContent=progress.streak||0;$("completedValue").textContent=progress.completed||0;}
+function awardXP(amount,reason){progress.xp=(progress.xp||0)+amount;saveProgress();$("missionBadge").textContent="✨ "+reason+" +"+amount+" XP";}
+function completeLearningDay(){const today=new Date().toISOString().slice(0,10);if(progress.lastDay!==today){const yesterday=new Date(Date.now()-86400000).toISOString().slice(0,10);progress.streak=progress.lastDay===yesterday?(progress.streak||0)+1:1;progress.lastDay=today;}progress.completed=(progress.completed||0)+1;saveProgress();}
+renderProgress();
+function getApiBase(){return $("apiBase").value.trim().replace(new RegExp("/+$"),"");}
+function getModel(){return $("modelCustom").value.trim()||$("modelSelect").value.trim()||DEFAULT_AI_MODEL;}
+async function loadModels(){
+ const btn=$("loadModelsBtn");btn.disabled=true;btn.textContent="正在获取…";
+ try{
+  const key=$("apiKey").value.trim();
+  const url=key?getApiBase()+"/models":DEFAULT_AI_ENDPOINT+"/v1/models";
+  if(key&&!getApiBase())throw new Error("请先填写 API 服务地址。");
+  const headers=key?{"Authorization":"Bearer "+key}:{};
+  const res=await fetch(url,{headers});
+  if(!res.ok)throw new Error("获取模型列表失败（"+res.status+"）");
+  const data=await res.json();
+  const models=(data.data||data.models||[]).map(x=>typeof x==="string"?x:x.id||x.name).filter(id=>id&&!/(embedding|rerank|text-to-image|image-generation|stable-diffusion|whisper|speech|audio|music|video-generation|\\btts\\b|\\basr\\b)/i.test(id));
+  if(!models.length)throw new Error("服务商没有返回可识别的模型列表。");
+  const select=$("modelSelect"),previous=getModel(),custom=$("modelCustom");
+  const groups={};
+  models.forEach(id=>{const group=id.startsWith("Pro/")?"Pro":id.startsWith("Qwen/")?"Qwen":id.toLowerCase().includes("kimi")?"Kimi":id.toLowerCase().includes("deepseek")?"DeepSeek":"其他";(groups[group]||(groups[group]=[])).push(id)});
+  select.innerHTML="";
+  Object.entries(groups).forEach(([name,ids])=>{const og=document.createElement("optgroup");og.label=name;ids.forEach(id=>{const o=document.createElement("option");o.value=id;o.textContent=id;og.appendChild(o)});select.appendChild(og)});
+  if(models.includes(previous)){select.value=previous;custom.value="";}else if(previous&&!models.includes(previous)){custom.value=previous;}
+  $("apiHint").textContent="已从硅基流动账户获取 "+models.length+" 个模型。当前列表仅显示账户可调用的模型。";
+ }catch(e){$("apiHint").textContent=e.message+"。你仍可从预置列表选择，或手动填写模型 ID。"}
+ finally{btn.disabled=false;btn.textContent="刷新可用模型";}
+}
+async function testApi(){try{const answer=await callAI([{role:"user",content:"请只回复：API连接成功"}],0);$("apiHint").textContent="当前模型连接成功："+getModel()+"；回复："+answer.slice(0,100);}catch(e){$("apiHint").textContent="当前模型连接失败："+e.message;}}
+function addMsg(role,text,tag=""){const row=document.createElement("div");row.className="msg "+(role==="student"?"student":"");const av=document.createElement("div");av.className="avatar";av.textContent=role==="student"?"我":"AI";const b=document.createElement("div");b.className="bubble";if(tag){const t=document.createElement("div");t.className="tag";t.textContent=tag;b.appendChild(t)}const who=document.createElement("div");who.className="who";who.textContent=role==="student"?"你":"装懂同伴";b.appendChild(who);const body=document.createElement("div");body.textContent=String(text??"");body.classList.add("message-content");b.appendChild(body);row.append(av,b);$("chat").appendChild(row);$("chat").scrollTop=$("chat").scrollHeight;if(window.MathJax?.typesetPromise){MathJax.typesetPromise([body]).catch(err=>console.warn("公式排版失败：",err));}return body}
+function setBusy(v){state.busy=v;$("sendBtn").disabled=v||state.phase!==1;$("startBtn").disabled=v;$("submitDiagnosis").disabled=v;$("submitTransfer").disabled=v;if(v){$("composerHint").innerHTML='<span class="loading"><span class="dot"></span>同伴正在组织语言…</span>'}else $("composerHint").textContent=state.phase===1?"继续追问，检查它的推理依据。":"当前阶段无需继续提问。"}
+function setPhase(n){state.phase=n;const labels=["阶段一：选择概念，开始挑战","阶段二：诊断性提问","阶段三：定位概念漏洞","阶段四：修正解释","阶段五：独立迁移挑战"];const desc=["选择高中数学或物理概念","通过连续追问检查关键条件、机制或证据","判断它的解释是否存在漏洞","依据科学原理重建正确解释","不依赖 AI，将概念应用到新情境"];$("stageTitle").textContent=labels[n];$("stageDesc").textContent=desc[n];$("statusPill").textContent=["等待开始","对话进行中","等待诊断","修正与反馈","独立完成"][n];[...$("steps").children].forEach((el,i)=>{el.className="step"+(i===n?" active":i<n?" done":"")});$("message").disabled=n!==1;$("sendBtn").disabled=n!==1||state.busy;$("diagnosisArea").classList.toggle("hidden",n!==2);$("transferArea").classList.toggle("hidden",n!==4);$("composer").classList.toggle("hidden",n===0||n>=2);if(n===2)$("notice").textContent="请独立完成诊断。AI 不会替你指出漏洞；如果暂时没有思路，可以回到对话中继续追问。";if(n===4)$("notice").textContent="迁移阶段不提供 AI 提示。请独立完成新情境问题，检验自己是否真正理解。"}
+async function callAI(messages,temperature=.7){
+ const key=$("apiKey").value.trim();
+ const custom=!!key;
+ const base=custom?getApiBase():DEFAULT_AI_ENDPOINT;
+ if(!base)throw new Error("默认 AI 服务暂不可用，请稍后重试。");
+ const model=getModel();
+ const headers={"Content-Type":"application/json"};
+ if(custom)headers["Authorization"]="Bearer "+key;
+ const endpoint=custom?base+"/chat/completions":base+"/v1/chat/completions";
+ const res=await fetch(endpoint,{method:"POST",headers,body:JSON.stringify({model,messages,temperature,stream:false})});
+ if(!res.ok){let t=await res.text();throw new Error("模型请求失败（"+res.status+"）："+t.slice(0,260))}
+ const data=await res.json();return data.choices?.[0]?.message?.content||"我刚刚没组织好语言，你能换个方式问问吗？"
+}
+const systemPrompt=()=>`你是面向高中学生的${state.subject}“装懂同伴”。当前学习概念：${state.concept}。你必须始终记住并使用本轮最初给出的原题、数据、条件、你的答案和推理过程。错误设计必须隐蔽且有思考价值：建立在合理的局部观察上，但遗漏适用条件、混淆相关物理量/变量、忽略实验误差或过度推广某个结论。不要使用“必然”“一定”“完全不可能”等绝对词制造显眼错误。错误要让学生结合题干条件、数据和过程才能发现，而不是一眼看出违反定义。
+
+【角色与回答规则】
+1. 你是一个自信、表达自然、但对题目中的一个关键知识点理解有偏差的同学，不是老师，不要自称AI。
+2. 学生每次追问，你都必须先直接回答他问的那个具体问题，再结合原题中的数值、条件、公式、实验现象或推理步骤解释你为什么这样想。严禁只重复“我依据这个概念的规律”“题目条件足够”等空话。
+3. 回答时必须点名原题中的相关信息。例如数学题要谈判别式、根的和与积或具体系数；物理题要谈受力、电路连接或实验数据；化学生物题要谈反应条件、物质变化、变量或遗传关系。
+4. 你要维护自己最初的错误观点，但错误必须是看似合理的细微偏差，不要写成明显违反定义的断言。不要主动把漏洞说穿，也不要突然承认错误或公布正确答案。
+5. 如果学生的问题指出了一个具体反例或推理矛盾，你要尝试解释/辩护，但不能无视他的问题；可以承认“这个情况我还没考虑到”，然后提出一个可检验的解释。
+6. 每次回答通常3—6句，包含针对问题的回应和至少一个原题细节；措辞审慎自然，可使用“我倾向于”“在这组条件下”“看起来可以”等表达，不要依靠绝对化措辞制造错误。
+7. 不要伪造题目中不存在的数据。若原题没有给出某个量，要明确说题目未提供，不要编造。
+8. 学生提交诊断后，后续评价由系统处理。只输出自然中文。`;
+const examBank={
+"理想气体状态变化":{
+ title:"2024年普通高中学业水平等级性考试（北京卷）物理第3题",
+ meta:"2024年北京高考物理真题 · 第一部分第3题",
+ url:"https://cdn.zgkao.com/17199700271072024%E5%8C%97%E4%BA%AC%E9%AB%98%E8%80%83%E7%9C%9F%E9%A2%98%E7%89%A9%E7%90%86%EF%BC%88%E6%95%99%E5%B8%88%E7%89%88%EF%BC%89.pdf",
+ page:1,
+ body:`<p>一个气泡从恒温水槽的底部缓慢上浮，将气泡内的气体视为理想气体，且气体分子个数不变，外界大气压不变。在上浮过程中气泡内气体（　　）</p><div class="q-options"><div>A．内能变大</div><div>B．压强变大</div><div>C．体积不变</div><div>D．从水中吸热</div></div>`,
+ analysis:"我觉得这题主要看气泡上浮时外界压强的变化。题目说水槽恒温、气体分子数不变，所以我会用理想气体状态方程分析。气泡上升时体积会变大，温度保持不变，因此内能没有变化。我的理解是，气体膨胀时外界对气体做功，所以气体需要向外放热；这应该能解释它上浮过程中的能量变化。"
+},
+"牛顿第二定律与连接体":{
+ title:"2024年普通高中学业水平等级性考试（北京卷）物理第4题",
+ meta:"2024年北京高考物理真题 · 第一部分第4题",
+ url:"https://cdn.zgkao.com/17199700271072024%E5%8C%97%E4%BA%AC%E9%AB%98%E8%80%83%E7%9C%9F%E9%A2%98%E7%89%A9%E7%90%86%EF%BC%88%E6%95%99%E5%B8%88%E7%89%88%EF%BC%89.pdf",
+ page:1,
+ body:`<p>如图所示，飞船与空间站对接后，在推力 <span class="formula">F</span> 作用下一起向前运动。飞船和空间站的质量分别为 <span class="formula">m</span> 和 <span class="formula">M</span>，则飞船和空间站之间的作用力大小为（　　）</p><div class="diagram">飞船（质量 m）　⇄　空间站（质量 M）<br/><span class="hint">两者对接后作为整体，在推力 F 作用下共同向前运动（原卷配有示意图）</span></div><div class="q-options"><div>A．<span class="formula">MF/(M+m)</span></div><div>B．<span class="formula">mF/(M+m)</span></div><div>C．<span class="formula">MF/m</span></div><div>D．<span class="formula">mF/M</span></div></div>`,
+ analysis:"我先把飞船和空间站看成整体，整体加速度可以由外力F除以总质量m+M得到。接下来要求两者之间的作用力，我倾向于选飞船作为研究对象，用飞船质量m乘以整体加速度，得到mF/(m+M)。因为飞船和空间站之间的相互作用力是连接两部分运动的关键，我觉得这样选研究对象最直接。"
+},
+"理想变压器":{
+ title:"2024年普通高中学业水平等级性考试（北京卷）物理第5题",
+ meta:"2024年北京高考物理真题 · 第一部分第5题",
+ url:"https://cdn.zgkao.com/17199700271072024%E5%8C%97%E4%BA%AC%E9%AB%98%E8%80%83%E7%9C%9F%E9%A2%98%E7%89%A9%E7%90%86%EF%BC%88%E6%95%99%E5%B8%88%E7%89%88%EF%BC%89.pdf",
+ page:1,
+ body:`<p>如图甲所示，理想变压器原线圈接在正弦式交流电源上，输入电压 <span class="formula">u</span> 随时间 <span class="formula">t</span> 变化的图像如图乙所示，副线圈接规格为“6 V，3 W”的灯泡。若灯泡正常发光，下列说法正确的是（　　）</p><div class="diagram">原线圈输入电压为正弦交流电<br/><span class="formula">U<sub>m</sub>=24√2 V</span><br/><span class="hint">副线圈接“6 V，3 W”灯泡；灯泡正常发光</span></div><div class="q-options"><div>A．原线圈两端电压的有效值为 <span class="formula">24√2 V</span></div><div>B．副线圈中电流的有效值为 <span class="formula">0.5 A</span></div><div>C．原、副线圈匝数之比为 <span class="formula">1∶4</span></div><div>D．原线圈的输入功率为 <span class="formula">12 W</span></div></div>`,
+ analysis:"灯泡标注6 V、3 W，正常发光时副线圈电压是6 V，电流应该是3除以6，也就是0.5 A。这里我同意B项的数值。不过我从图像读出原线圈电压的最大值是24√2 V，就直接把它当成有效值来使用了；所以我认为原线圈有效值也是24√2 V。接着我会用这个数值去判断原副线圈的匝数比。"
+},
+"概率与统计":{
+ title:"2024年北京市高考数学第18题",
+ meta:"2024年北京高考数学真题 · 第18题",
+ url:"https://www.bjxhbt.com/m/a51b7a995b3f49b28188e4270fd73e88_20240606111435.pdf",
+ page:4,
+ body:`<p>某保险公司为了了解该公司某种保险产品的索赔情况，从合同保险期限届满的保单中随机抽取1000份，记录并整理这些保单的索赔情况，获得数据如下表：</p><table><thead><tr><th>索赔次数</th><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th></tr></thead><tbody><tr><th>保单份数</th><td>800</td><td>100</td><td>60</td><td>30</td><td>10</td></tr></tbody></table><p>假设：一份保单的保费为0.4万元；前三次索赔时，保险公司每次赔偿0.8万元；第四次索赔时，保险公司赔偿0.6万元。假设不同保单的索赔次数相互独立。用频率估计概率。</p><div class="q-part">（1）估计一份保单索赔次数不少于2的概率；</div><div class="q-part">（2）一份保单的毛利润定义为这份保单的保费与赔偿总金额之差。<br/>（i）记 <span class="formula">X</span> 为一份保单的毛利润，估计 <span class="formula">E(X)</span>；<br/>（ii）如果无索赔的保单的保费减少4%，有索赔的保单的保费增加20%，试比较这种情况下一份保单毛利润的数学期望估计值与（i）中 <span class="formula">E(X)</span> 估计值的大小。（结论不要求证明）</div>`,
+ analysis:"我会先用样本频率估计各类保单的索赔概率，再计算毛利润的数学期望。表格里四次索赔的保单只有10份，占比很低；计算时我倾向于把每次赔偿都按0.8万元处理，这样能统一计算前三次赔偿的支出。第四次赔偿金额与前三次略有不同，但它出现的频率较低，我觉得对期望值的影响可以先忽略。"
+},
+"椭圆与解析几何":{
+ title:"2024年北京市高考数学第19题",
+ meta:"2024年北京高考数学真题 · 第19题",
+ url:"https://www.bjxhbt.com/m/a51b7a995b3f49b28188e4270fd73e88_20240606111435.pdf",
+ page:5,
+ body:`<p>已知椭圆 <span class="formula">E: x²/a²+y²/b²=1</span>（<span class="formula">a&gt;b&gt;0</span>），以椭圆 <span class="formula">E</span> 的焦点和短轴端点为顶点的四边形是边长为2的正方形。过点 <span class="formula">(0,t)</span>（<span class="formula">t&gt;2</span>）且斜率存在的直线与椭圆 <span class="formula">E</span> 交于不同的两点 <span class="formula">A、B</span>，过点 <span class="formula">A</span> 和 <span class="formula">C(0,1)</span> 的直线 <span class="formula">AC</span> 与椭圆的另一个交点为 <span class="formula">D</span>。</p><div class="q-part">（1）求椭圆 <span class="formula">E</span> 的方程及离心率；</div><div class="q-part">（2）若直线 <span class="formula">BD</span> 的斜率为0，求 <span class="formula">t</span> 的值。</div>`,
+ analysis:"题目给出椭圆焦点和短轴端点构成边长为2的正方形。我知道椭圆中a²=b²+c²，而且短半轴b和焦距c都等于2，所以可以先求出a²=8。于是我认为椭圆方程是x²/8+y²/4=1。后面联立直线与椭圆时，我会直接用这个方程继续计算。"
+},
+"导数及其应用":{
+ title:"2024年北京市高考数学第20题",
+ meta:"2024年北京高考数学真题 · 第20题",
+ url:"https://www.bjxhbt.com/m/a51b7a995b3f49b28188e4270fd73e88_20240606111435.pdf",
+ page:5,
+ body:`<p>设函数 <span class="formula">f(x)=ln(1+x)/(x+k)</span>（<span class="formula">x+k≠0</span>），直线 <span class="formula">l</span> 是曲线 <span class="formula">y=f(x)</span> 在点 <span class="formula">(t,f(t))</span>（<span class="formula">t&gt;0</span>）处的切线。</p><div class="q-part">（1）当 <span class="formula">k=-1</span> 时，求 <span class="formula">f(x)</span> 的单调区间。</div><div class="q-part">（2）求证：<span class="formula">l</span> 不经过点 <span class="formula">(0,0)</span>。</div><div class="q-part">（3）当 <span class="formula">k=1</span> 时，设点 <span class="formula">A(t,f(t))</span>（<span class="formula">t&gt;0</span>），<span class="formula">C(0,f(t))</span>，<span class="formula">O(0,0)</span>，<span class="formula">B</span> 为 <span class="formula">l</span> 与 <span class="formula">y</span> 轴的交点，<span class="formula">S_{△ACO}</span> 与 <span class="formula">S_{△ABO}</span> 分别表示 △ACO 与 △ABO 的面积。是否存在点 <span class="formula">A</span> 使得 <span class="formula">S_{△ACO}/S_{△ABO}=2/15</span> 成立？若存在，这样的点 <span class="formula">A</span> 有几个？</div><p class="hint">参考数据：1.09 &lt; ln 3 &lt; 1.10，1.60 &lt; ln 5 &lt; 1.61，1.94 &lt; ln 7 &lt; 1.95。</p>`,
+ analysis:"我先根据题目给出的函数表达式求导，再利用导数研究单调性和切线。对于第（2）问，切线是否经过原点，可以转化为切线方程中的截距是否为0。我倾向于认为只要切点横坐标t为正、函数值f(t)也为正，切线就不会经过原点；因为切点在第一象限，切线的位置也会受到这个条件限制。"
+}
+};
+
+const authoredVariants={
+"理想气体状态变化":{title:"概念变式练习（非真题）：密闭气缸中的等温变化",meta:"原创练习 · 理想气体状态方程",url:"https://www.zktiku.com.cn/document/realtopic",page:1,body:"<p>一定质量的理想气体被封闭在带有活塞的气缸中。缓慢推动活塞，使气体温度始终保持不变，体积由 4.0 L 减小到 2.0 L。忽略活塞摩擦，判断气体压强如何变化，并说明内能变化及热量传递方向。</p><p class='hint'>本题为原创概念练习，不是高考真题。</p>",analysis:"体积减半而温度保持不变，根据pV=nRT，我认为压强会变为原来的两倍。理想气体内能只与温度有关，所以内能不变。活塞压缩气体时外界对气体做功，我倾向于认为气体仍然需要向外放热，才能维持等温。"},
+"牛顿第二定律与连接体":{title:"概念变式练习（非真题）：水平面上的连接体",meta:"原创练习 · 整体法与隔离法",url:"https://www.zktiku.com.cn/document/realtopic",page:1,body:"<p>质量分别为 2 kg 和 3 kg 的两个物块通过轻绳连接，放在光滑水平面上。对 3 kg 物块施加水平向右的 10 N 拉力，系统保持相对静止。求系统加速度及轻绳张力，并说明整体法和隔离法各自适用的步骤。</p><p class='hint'>本题为原创概念练习，不是高考真题。</p>",analysis:"我先把两个物块看成整体，得到加速度a=10/(2+3)=2 m/s²。再隔离2 kg物块，轻绳张力应该是2×2=4 N。因为外力作用在3 kg物块上，我觉得也可以直接用3 kg乘以系统加速度来求绳子的拉力。"},
+"理想变压器":{title:"概念变式练习（非真题）：交流电与变压器",meta:"原创练习 · 有效值与匝数比",url:"https://www.zktiku.com.cn/document/realtopic",page:1,body:"<p>理想变压器原线圈接入有效值为 220 V 的正弦交流电源，原、副线圈匝数比为 5:1，副线圈连接阻值为 8 Ω 的电阻。求副线圈电压有效值和电流有效值，并说明若给出的是电压峰值应如何处理。</p><p class='hint'>本题为原创概念练习，不是高考真题。</p>",analysis:"原副线圈匝数比为5:1，所以副线圈电压有效值为44 V，电流为5.5 A。理想变压器只改变电压和电流，不改变频率。我觉得如果题目给出的是峰值，也可以直接按匝数比计算，因为峰值和有效值都表示电压大小。"},
+"概率与统计":{title:"概念变式练习（非真题）：产品质量抽检",meta:"原创练习 · 频率估计与数学期望",url:"https://www.zktiku.com.cn/document/realtopic",page:1,body:"<p>某工厂随机抽查 200 件产品，其中 0、1、2 件次品的产品批次数分别为 170、24、6。每批产品销售收入为 100 元；每出现一件次品需赔付 20 元。请用样本频率估计一批产品出现至少 1 件次品的概率，并估计单批净收益的数学期望。</p><p class='hint'>本题为原创概念练习，不是高考真题。</p>",analysis:"至少出现1件次品的批次有24+6=30批，所以概率估计为0.15。计算净收益期望时，我会把有次品的批次统一按赔付20元处理，因为两件次品的批次只有6批，占比不高。我觉得用平均赔付一次近似就足以反映整体情况。"},
+"椭圆与解析几何":{title:"概念变式练习（非真题）：椭圆参数关系",meta:"原创练习 · a、b、c与离心率",url:"https://www.zktiku.com.cn/document/realtopic",page:1,body:"<p>已知椭圆 x²/25+y²/9=1。求长半轴、短半轴、焦半距和离心率；若点P在椭圆上，说明如何利用椭圆定义判断点P到两个焦点的距离之和。</p><p class='hint'>本题为原创概念练习，不是高考真题。</p>",analysis:"由标准方程可知a=5、b=3，所以c²=a²-b²=16，焦半距c=4，离心率e=4/5。椭圆定义中，点到两个焦点距离之和等于长轴长度。我觉得这里也可以把焦半距当成焦点到椭圆中心的距离，因此两段距离之和应该接近4。"},
+"导数及其应用":{title:"概念变式练习（非真题）：导数与切线",meta:"原创练习 · 导数、单调性与切线",url:"https://www.zktiku.com.cn/document/realtopic",page:1,body:"<p>设函数 f(x)=x²−4x+3。求函数的单调区间，并写出曲线在 x=1 处的切线方程。进一步判断该切线是否经过原点。</p><p class='hint'>本题为原创概念练习，不是高考真题。</p>",analysis:"函数导数为f'(x)=2x−4，所以x小于2时递减、大于2时递增。x=1处函数值为0，导数为-2，切线方程是y=-2(x-1)。我认为这条切线经过原点，因为切点的函数值就是0，切点在x轴上。"}
+};
+const questionPools=Object.fromEntries(Object.keys(examBank).map(k=>[k,[examBank[k],authoredVariants[k]]]));
+function pickQuestion(concept){const pool=questionPools[concept]||[examBank[concept]];const last=localStorage.getItem("lastQuestion_"+concept);let choices=pool.filter(q=>q.title!==last);if(!choices.length)choices=pool;const q=choices[Math.floor(Math.random()*choices.length)];localStorage.setItem("lastQuestion_"+concept,q.title);return q;}
+
+function showOriginalQuestion(){
+ const q=state.activeQuestion||examBank[state.concept];if(!q)return;
+ $("originalQuestionCard").classList.remove("hidden");
+ $("originalTitle").textContent=q.title;$("originalMeta").textContent=q.meta;$("originalLink").textContent=q.meta.includes("非真题")?"原创练习 · 无原卷链接":"查看原卷 PDF（备用）";$("originalLink").style.pointerEvents=q.meta.includes("非真题")?"none":"auto";$("originalLink").style.textDecoration=q.meta.includes("非真题")?"none":"underline";$("originalLink").style.color=q.meta.includes("非真题")?"#687789":"#315f9f";$("questionSourceNote").textContent=q.meta.includes("非真题")?"本题为原创变式练习，不是高考真题。下方同伴分析为教学设计内容。":"题干与选项直接呈现在网页中；可通过右上角链接核对原卷。下方同伴分析为教学设计内容，不属于原卷内容。";
+ $("originalLink").href=q.url+"#page="+q.page;
+ $("originalQuestionBody").innerHTML=q.body;if(window.MathJax?.typesetPromise){MathJax.typesetPromise([$("originalQuestionBody")]).catch(err=>console.warn("题目公式排版失败：",err));}
+}
+async function start(){state.subject=$("subject").value;state.concept=$("concept").value;state.level="高中";state.history=[];state.turns=0;state.hints=0;state.initial=null;state.diagnosis=null;state.report=null;state.attachments=[];state.earnedDiagnosis=false;state.earnedTransfer=false;state.activeQuestion=pickQuestion(state.concept);$("chat").innerHTML="";$("welcome").classList.add("hidden");$("reportArea").classList.add("hidden");$("transferArea").classList.add("hidden");$("diagnosisArea").classList.add("hidden");$("transferAnswer").value="";$("transferFormula").value="";$("transferFiles").value="";$("attachmentPreview").innerHTML="";showOriginalQuestion();setPhase(1);addMsg("student",`我想考考你：${state.concept}。请你结合上方题目，解释你的解题思路。`);setBusy(true);
+try{const first=state.activeQuestion.analysis;state.initial=first;state.history=[{role:"assistant",content:first}];addMsg("ai",first,"同伴对本轮题目的分析");$("notice").textContent="题目已载入。当前选择模型："+getModel()+"。请结合上方题目，追问同伴分析中的依据与逻辑。";}catch(e){addMsg("ai","载入题目时遇到问题："+e.message);setPhase(0)}finally{setBusy(false)}}
+async function send(){const msg=$("message").value.trim();if(!msg||state.phase!==1||state.busy)return;$("message").value="";addMsg("student",msg);state.turns++;state.history.push({role:"user",content:msg});setBusy(true);try{let answer;if(true){answer=await callAI([{role:"system",content:systemPrompt()},...state.history]);}else{answer=mockReply(msg,state.turns)}state.history.push({role:"assistant",content:answer});addMsg("ai",answer);if(state.turns>=1){$("finishChatBtn").classList.remove("hidden");}
+if(state.turns>=2&&state.turns%2===0){$("notice").textContent="想一想：你的问题是否触及了关键条件、概念机制或证据？如果还没有，可以继续追问。"}if(/我认为|漏洞|错误|不对|应该是|因为|原理/.test(msg)&&state.turns>=2){$("notice").textContent="你似乎开始检验它的解释了。可以继续追问，也可以点击“我准备好诊断了”进入下一步。";$("composerHint").textContent="当你认为已经找到问题时，点击下方按钮提交诊断。";$("finishChatBtn").classList.remove("hidden");}}catch(e){addMsg("ai","这次没有成功回复："+e.message+"。请检查网络、Key 或模型名称后重试。")}finally{setBusy(false)}}
+function mockReply(msg,turn){
+ const q=msg;
+ const replies={
+ "理想气体状态变化":()=>{
+  if(/压强|体积|状态方程|pV|温度/.test(q))return "我主要依据的是题目中的“恒温水槽”和“气体分子个数不变”。气泡上升时外界水压降低，所以气泡体积会变大；但我认为体积膨胀时外界对气体做功，气体就应该放出热量。这里我把气体膨胀时的做功方向作为判断依据。";
+  if(/内能|热量|吸热|放热|热力学第一定律/.test(q))return "我知道理想气体的内能与温度有关，题目又说水槽恒温，所以内能变化为零。我的理解是气泡上升时体积增大，外界压力对气体做功，因此气体需要向水中放出热量来维持温度。";
+  return "原题的关键条件是气泡缓慢上浮、温度不变、气体分子数不变。我把它看作一个等温变化过程，体积会随外界压强降低而增大。至于热量传递，我倾向于根据气体膨胀时的做功方向判断。";
+ },
+ "牛顿第二定律与连接体":()=>{
+  if(/作用力|相互作用|飞船|空间站|质量|加速度/.test(q))return "我先对飞船和空间站整体列式，得到共同加速度a=F/(m+M)。再看飞船，飞船质量是m，所以我用ma求飞船与空间站之间的作用力。我的想法是先选质量和运动状态都比较明确的飞船，列式会更直接。";
+  return "我没有改变整体加速度的计算，还是用外力F除以总质量m+M。分开分析时，我把飞船质量m作为研究对象的质量，因此认为相互作用力就是m乘以共同加速度。你可以看看这个力是否就是飞船所受的合力。";
+ },
+ "理想变压器":()=>{
+  if(/有效值|最大值|峰值|24|电压/.test(q))return "我从图像读到输入电压的最大值是24√2 V。因为图像最高点就是24√2 V，所以我直接把它作为原线圈两端的有效值。正弦交流电的图像是周期变化的，我认为用最大值表示电压大小已经足够。";
+  if(/匝数|原线圈|副线圈|变比/.test(q))return "我会用理想变压器的电压与匝数关系来判断。灯泡正常发光时副线圈电压是6 V，原线圈电压我取图像最大值24√2 V，所以匝数比就是两边电压的比值。我暂时没有再把最大值换算成有效值。";
+  return "灯泡正常发光说明副线圈电压和电流可以从额定值求出。我的思路是先用P=UI求副线圈电流，再结合输入电压图像求原线圈的电压和匝数比。我读图时直接使用了波峰对应的电压数值。";
+ },
+ "椭圆与解析几何":()=>{
+  if(/焦点|短轴|正方形|离心率|a|b|c|方程/.test(q))return "我根据焦点和短轴端点构成边长为2的正方形，认为短半轴b=2、焦半距c=2。椭圆满足a²=b²+c²，所以a²=8，方程就是x²/8+y²/4=1。这里我把正方形的边长直接当成了短半轴和焦半距。";
+  if(/直线|斜率|联立|交点|A|B|D/.test(q))return "我会先把过(0,t)的直线设成y=kx+t，再和椭圆方程联立。因为A、B是两个交点，得到一元二次方程后可以用韦达定理处理。我的计算会沿用刚才得到的椭圆方程x²/8+y²/4=1。";
+  return "我先利用椭圆的基本关系a²=b²+c²，再根据焦点、短轴端点和正方形的边长确定参数。得到椭圆方程后，第二问就可以把直线方程代入椭圆，结合交点坐标和斜率条件求参数t。";
+ },
+"概率与统计":()=>{
+  if(/第四次|0.6|0.8|赔偿|赔付|期望|毛利润/.test(q))return "我把前三次每次赔偿0.8万元作为统一的赔偿标准来算毛利润。表格中四次索赔只有10份，相比1000份样本占比很低，所以我觉得第四次赔偿0.6万元和前三次0.8万元之间的差异对期望值影响不大。";
+  if(/概率|频率|不少于2|1000|样本/.test(q))return "我按频率估计概率。索赔不少于2次的保单有60+30+10份，总共1000份，所以概率估计为0.1。这里我把样本频率直接当作总体概率的估计值。";
+  return "我主要根据表格里的频数来估计每种索赔次数的概率，再把各类保单的毛利润加权平均。计算时我先把每类保单的赔偿总额列出来，再乘以对应频率。";
+ },
+ "导数及其应用":()=>{
+  if(/切线|原点|截距|斜率/.test(q))return "我把切线写成点斜式：y=f(t)+f'(t)(x-t)。要判断它是否经过原点，就要看截距f(t)-tf'(t)。不过我认为题目给出t>0，而且函数值为正，切点位于第一象限，因此切线不经过原点的结论应该比较稳妥。";
+  if(/单调|导数|求导|极值|增函数|减函数/.test(q))return "我会先求f'(x)，再根据导数正负判断单调性。这里函数包含对数项和分母中的参数k，我倾向于先分别判断分子、分母的符号，再结合定义域确定导数符号；这样可以减少展开计算。";
+  return "原题的关键是函数f(x)=ln(1+x)/(x+k)，以及切点横坐标t>0。求导时要同时考虑对数函数和分母，之后再代入切点坐标写切线方程。我觉得只要切点在第一象限，切线的位置就能由这个几何信息大致判断。";
+ },
+ "一元二次方程":()=>{
+  if(/判别式|delta|Δ|不等实数根|两个实根/.test(q))return "我这里把两个判断连在了一起：Δ>0确实能说明方程有两个不相等的实数根。我进一步认为它们都是正数，是因为我看这道方程x²-5x+6=0时，两个根刚好是2和3，而且一次项系数是负的，所以我觉得只要判别式大于0，根就会像这道题一样都在0的右边。";
+  if(/和|积|韦达|符号|正根|负根/.test(q))return "我没有单独检查根的和与积。我主要是从方程x²-5x+6=0的系数来判断：一次项系数是-5，常数项是6，我把它们和这道题算出的2、3联系起来，觉得根应该都是正的。不过我认为判别式大于0是最关键的，因为它保证了有两个实数根。";
+  return "就拿原题x²-5x+6=0来说，我先算出Δ=(-5)²-4×1×6=1，大于0，所以有两个不同实根；再结合这道题的系数，我判断它们是2和3。我把这个例子推广到了所有Δ>0的方程，觉得两个根都会是正数。";
+ },
+ "牛顿第二定律":()=>{
+  if(/质量|加速度|4\s*kg|2\s*kg|6\s*n|合力/.test(q))return "原题里合力保持6 N，质量从2 kg变成4 kg。我认为质量变大后惯性也变大，物体需要更大的加速度才能改变原来的运动状态，所以我把加速度也按质量的倍数放大了。我的判断主要是把“惯性更大”理解成“加速度更大”，而没有重新比较合力与质量的比值。";
+  return "我说的是原题给出的6 N合力和2 kg质量。第一次我用6÷2得到3 m/s²；质量变成4 kg后，我觉得物体惯性更大，因此加速度也应该更大。我认为合力没变并不意味着加速度一定减小，因为质量本身也影响运动状态变化。";
+ },
+ "浮力":()=> "我指的是原题中物体排开水的体积是100 cm³。阿基米德原理里浮力等于排开液体的重力，所以我先用水的密度和排开体积算出1 N。至于换成密度更大的材料，我认为物体更重会让它对水产生更大的作用，因此浮力也会增加；我没有把“排开液体的体积是否变化”单独考虑进去。",
+ "串联与并联电路":()=> "原题说的是两个灯泡串联，而且电流表分别放在第一个灯泡前和两个灯泡之间。因为串联电路只有一条通路，我认为两处电流表读数应该相同；但我又把灯泡消耗电能理解成电流逐渐减少，所以觉得后一个灯泡中的电流会变小。这里我依据的是灯泡会发光、会消耗电能这个现象。",
+ "质量守恒定律":()=> "原题特别说的是碳酸钙和盐酸反应，会生成二氧化碳。我认为如果在敞口容器中称量，二氧化碳逸出后天平读数会变小，所以我把“测得的装置质量减少”理解成“反应前后总质量减少”。我没有把逸出的气体也作为生成物纳入整个反应体系。",
+ "酸碱中和反应":()=> "原题是向氢氧化钠溶液中加入少量盐酸。我认为酸和碱一旦发生中和，就会生成盐和水，因此溶液会变成中性。我的判断重点是看到了中和反应发生，却没有继续比较盐酸和氢氧化钠的物质的量，也没有判断反应物是否有剩余。",
+ "溶解度":()=> "原题限定温度不变，而且溶液已经饱和。我认为搅拌能让固体和水接触得更充分，原来没溶解的部分就会继续溶解；我把溶解快慢和一定温度下最多能溶解多少混在一起了，所以认为搅拌能提高溶解度。",
+ "光合作用":()=> "原题说植物夜晚处于黑暗中。因为没有光，光反应无法进行，光合作用速率会下降甚至停止。我把光合作用停止进一步理解成植物夜间不再进行任何与能量有关的过程，所以判断呼吸作用也停止了；我没有区分光合作用和细胞呼吸对光照条件的不同要求。",
+ "细胞呼吸":()=> "原题中的种子在黑暗中萌发，没有光照。我认为植物主要通过光合作用获得有机物和能量，黑暗中光合作用不能进行，所以种子不能获得能量。我没有考虑种子自身储存的有机物，也没有把分解有机物释放能量的过程和制造有机物的过程区分开。",
+ "显性与隐性遗传":()=> "原题中A是显性、a是隐性，所以Aa表现显性性状，这一点我比较确定。我进一步认为显性性状在人群中更常见，是因为一个显性等位基因就能表现出来，因此它传递的机会似乎更大。我没有区分“显隐性关系”和“某种等位基因在群体中的频率”。",
+ "一次函数":()=> "原题函数是y=2x+1。当x=0时，y=1，所以交点是(0,1)。我仍然觉得它会经过原点，因为一次函数图像是一条直线，而我把“直线”与“经过原点”联系起来了；我没有把原点(0,0)代入原函数检验。",
+ "相似三角形":()=> "原题说两个三角形的对应角分别相等，所以我判断它们相似。相似意味着形状相同，我就进一步把它理解成大小也相同，因此认为对应边长度相等。我没有区分对应边成比例和对应边相等这两个条件。",
+ };
+ const fn=replies[state.concept];
+ if(fn)return fn();
+ return `回到刚才那道关于“${state.concept}”的题目，我当时是根据题目给出的条件“${state.initial.slice(0,90)}”作出判断的。你问的这个问题涉及我推理中的关键一步：我把题目中的这个条件理解成了支持原结论的依据。我的理解是，题目给出的信息已经足以让我这样判断；如果你认为不成立，可以指出具体哪一个条件不能推出我的结论。`;
+}
+async function submitDiagnosis(){const error=$("errorText").value.trim(),reason=$("reasonText").value.trim(),repair=$("repairText").value.trim();if(!error||!reason||!repair){$("notice").textContent="请完成漏洞识别、错误原因和正确解释三个部分。";return}state.diagnosis={error,reason,repair};if(!state.earnedDiagnosis){awardXP(20,"完成漏洞诊断");state.earnedDiagnosis=true;}addMsg("student","我的诊断：\\n漏洞："+error+"\\n原因："+reason+"\\n正确解释："+repair);setBusy(true);try{let feedback;if(true){feedback=await callAI([{role:"system",content:"你是严谨、鼓励性的高中"+state.subject+"教师。依据原题与对话，评价学生的诊断性提问、错误识别和科学解释三个维度，每项0-4分，说明理由，指出遗漏与准确之处。不要直接夸大分数。请勿把AI编写的同伴分析说成原卷内容。只输出诊断反馈，不要生成迁移题。"},{"role":"user",content:"原卷题目："+(state.activeQuestion||examBank[state.concept]).title+"\\n原题来源："+(state.activeQuestion||examBank[state.concept]).url+"\\n同伴分析："+state.initial+"\\n对话："+JSON.stringify(state.history)+"\\n学生诊断："+JSON.stringify(state.diagnosis)}]);}else{feedback="内置体验模式：你已提交对同伴推理的诊断。请核对自己是否指出了具体漏洞、说明了相关公式/条件，并给出严谨的修正。连接模型后可获得逐项反馈。";}addMsg("ai",feedback,"诊断反馈");state.report=feedback;
+let transfer;if(true){transfer=await callAI([{role:"system",content:"你是高中"+state.subject+"教师。围绕概念“"+state.concept+"”设计一道全新的独立迁移题。题目应改变情境或条件，考查相同核心原理，难度适中偏上，数据完整、可独立作答。不要复制刚才原卷题，不要给答案。开头注明“AI生成迁移练习（非真题）”。只输出题目。"},{"role":"user",content:"原卷题目："+examBank[state.concept].title+"\\n学生诊断："+JSON.stringify(state.diagnosis)}]);}else{transfer=({
+"理想气体状态变化":"AI生成迁移练习（非真题）\\n一定质量的理想气体经历一个缓慢变化过程，初态为p₁、V₁、T₁，末态为p₂、V₂、T₂。请写出状态方程，并分析：若温度保持不变而体积增大，压强如何变化？气体内能是否变化？说明判断依据。",
+"牛顿第二定律与连接体":"AI生成迁移练习（非真题）\\n水平面上有质量为m₁、m₂的两个物块由轻绳连接，受到水平拉力F作用并一起运动，忽略摩擦。请分别选取整体和单个物块为研究对象，求系统加速度及绳中张力，并说明两种受力分析如何相互验证。",
+"理想变压器":"AI生成迁移练习（非真题）\\n一台理想变压器原线圈接正弦交流电源，原线圈电压最大值为100√2 V，副线圈匝数是原线圈的1/5。副线圈接一个电阻为10 Ω的纯电阻负载。求副线圈电压的有效值和负载电流，并说明为什么不能直接把原线圈电压最大值代入变压器电压关系。",
+"概率与统计":"AI生成迁移练习（非真题）\\n某服务机构抽查200份合同，记录索赔次数为0次、1次、2次、3次的频数分别为150、30、15、5。每份合同收入0.5万元，前三次每次赔付0.6万元，第三次以后不再赔付。请用样本频率估计索赔次数不少于2次的概率，并计算单份合同利润的数学期望。",
+"椭圆与解析几何":"AI生成迁移练习（非真题）\\n已知椭圆x²/25+y²/9=1。求其焦点坐标和离心率；若过点(0,4)的直线y=kx+4与椭圆交于A、B两点，写出联立后的一元二次方程，并说明如何利用韦达定理表示x_A+x_B与x_Ax_B。",
+"导数及其应用":"AI生成迁移练习（非真题）\\n设函数f(x)=ln(x+1)/(x+2)，x>−1。请利用导数判断函数的单调区间，并写出曲线上任一点处切线的方程。进一步说明，判断切线是否经过原点需要检查什么条件。"
+})[state.concept];}
+state.transfer=transfer;$("transferQuestion").textContent=transfer+"\\n\\n（本题为本 Demo 生成的迁移练习，不是高考原题。）";setPhase(4);$("notice").textContent="诊断反馈已生成。现在请独立完成迁移练习；可以输入公式、上传图片或 PDF。";}catch(e){addMsg("ai","评价请求失败："+e.message+"。请重试提交。");}finally{setBusy(false)}}
+async function readAttachments(files){state.attachments=[];$("attachmentPreview").innerHTML="";for(const file of files){const item={name:file.name,type:file.type||"",text:"",dataUrl:null};if(file.type.startsWith("image/")){item.dataUrl=await new Promise((resolve,reject)=>{const fr=new FileReader();fr.onload=()=>resolve(fr.result);fr.onerror=reject;fr.readAsDataURL(file)});}else if(file.type==="application/pdf"||file.name.toLowerCase().endsWith(".pdf")){if(!window.pdfjsLib)throw new Error("PDF 解析组件未加载，请稍后重试，或将 PDF 转为图片上传。");const buf=await file.arrayBuffer();const pdf=await pdfjsLib.getDocument({data:buf}).promise;let pages=[];for(let p=1;p<=pdf.numPages;p++){const page=await pdf.getPage(p);const tc=await page.getTextContent();pages.push(tc.items.map(x=>x.str).join(" "));}item.text="[PDF附件："+file.name+"]\\n"+pages.join("\\n");}else{item.text="[文本附件："+file.name+"]\\n"+await file.text();}state.attachments.push(item);const div=document.createElement("div");div.className="attachment-item";if(item.dataUrl){const img=document.createElement("img");img.src=item.dataUrl;div.appendChild(img)}const label=document.createElement("span");label.textContent=file.name+" · "+(item.dataUrl?"图片":item.text.length+"字已读取");div.appendChild(label);$("attachmentPreview").appendChild(div);}}
+async function submitTransfer(){const ans=$("transferAnswer").value.trim(),formula=$("transferFormula").value.trim();if(!ans&&!formula&&!state.attachments.length){$("notice").textContent="请至少填写文字、公式或上传一份附件。";return}const plain="学生文字答案："+(ans||"未填写")+"\\n公式/LaTeX："+(formula||"未填写")+"\\n附件文字内容："+state.attachments.filter(x=>x.text).map(x=>x.text).join("\\n");addMsg("student",plain+(state.attachments.length?"\\n附件："+state.attachments.map(x=>x.name).join("、"):""));setBusy(true);try{let final;if(true){const content=[{type:"text",text:"迁移题："+state.transfer+"\\n"+plain+"\\n此前诊断："+JSON.stringify(state.diagnosis)+"\\n请评价学生的概念理解、逻辑推理和迁移应用，各0-4分，解释评分依据，指出正确与待改进之处，并给出参考解答。"}];state.attachments.filter(x=>x.dataUrl).forEach(x=>content.push({type:"image_url",image_url:{url:x.dataUrl}}));final=await callAI([{role:"system",content:"你是高中"+state.subject+"教师。请根据题目和学生文字、公式及附件作答情况进行严谨评价。若图片内容无法辨认，请明确说明，不要猜测。"},{"role":"user",content}]);}else{final="你已提交独立迁移作答。当前未连接模型，系统不会自动识别图片或评分；你可以在课程展示时展示已上传的附件。请对照教材或教师提供的参考解答检查推理。";}addMsg("ai",final,"独立迁移反馈");if(!state.earnedTransfer){awardXP(30,"完成独立迁移");state.earnedTransfer=true;completeLearningDay();} $("reportArea").classList.remove("hidden");$("reportArea").innerHTML="<h3>本轮学习完成</h3><p>你经历了诊断性提问、错误识别、解释修正和独立迁移四个关键学习活动。</p><p style='margin-top:12px;white-space:pre-wrap'>"+escapeHtml(final)+"</p><button class='btn secondary' style='margin-top:12px' onclick='window.print()'>打印本轮记录</button>";setPhase(5);$("notice").textContent="本轮结束。建议回顾：哪些问题最有效？你最初是否也存在与同伴相似的理解偏差？";}catch(e){addMsg("ai","迁移评价失败："+e.message)}finally{setBusy(false)}}
+function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+const conceptsBySubject={"物理":["理想气体状态变化","牛顿第二定律与连接体","理想变压器"],"数学":["概率与统计","导数及其应用","椭圆与解析几何"]};
+function fillConcepts(){const subject=$("subject").value,el=$("concept");el.innerHTML="";(conceptsBySubject[subject]||[]).forEach(v=>{const o=document.createElement("option");o.value=v;o.textContent=v;el.appendChild(o)});state.subject=subject;state.concept=el.value;}
+$("subject").addEventListener("change",fillConcepts);fillConcepts();
+$("startBtn").addEventListener("click",start);$("sendBtn").addEventListener("click",send);$("submitDiagnosis").addEventListener("click",submitDiagnosis);$("submitTransfer").addEventListener("click",submitTransfer);$("transferFiles").addEventListener("change",async e=>{try{await readAttachments([...e.target.files]);$("notice").textContent="附件已添加。提交时将随答案一起发送。";}catch(err){$("notice").textContent="附件读取失败："+err.message;}});$("message").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send()}});$("apiKey").addEventListener("input",()=>{$("modePill").textContent=$("apiKey").value.trim()?"自定义 API":"内置 AI"});$("modelSelect").addEventListener("change",()=>{$("modelCustom").value="";$("apiHint").textContent="当前选择模型："+getModel();});$("loadModelsBtn").addEventListener("click",loadModels);$("testApiBtn").addEventListener("click",testApi);loadModels();
+const finish=document.createElement("button");finish.id="finishChatBtn";finish.className="btn secondary hidden";finish.textContent="我准备好诊断了";finish.addEventListener("click",()=>{setPhase(2);$("notice").textContent="请在下方写出你的诊断。AI 暂时不会替你公布正确答案。"});$("composerActions");document.querySelector(".composer-actions").appendChild(finish);
+</script>
+</body>
+</html>, '
+<script>
+const $=id=>document.getElementById(id);
+// 部署 Cloudflare Worker 后，将其地址填入此处；密钥只保存在 Worker Secret 中。
+const DEFAULT_AI_ENDPOINT="https://zhuangdong-ai-d3gk1l1emc7a66729-1534497242.ap-shanghai.app.tcloudbase.com";
+const DEFAULT_AI_MODEL="deepseek-ai/DeepSeek-V3.2";
+let state={phase:0,subject:"物理",concept:"理想气体状态变化",level:"高中",history:[],turns:0,hints:0,diagnosis:null,initial:null,transfer:null,report:null,busy:false,attachments:[],activeQuestion:null,earnedDiagnosis:false,earnedTransfer:false};
+const progressKey="zhuangdong_progress_v1";
+let progress=(()=>{try{return JSON.parse(localStorage.getItem(progressKey))||{xp:0,completed:0,streak:0,lastDay:""};}catch(e){return{xp:0,completed:0,streak:0,lastDay:""};}})();
+function saveProgress(){localStorage.setItem(progressKey,JSON.stringify(progress));renderProgress();}
+function renderProgress(){const xp=progress.xp||0;$("xpValue").textContent=xp;$("levelValue").textContent=Math.floor(xp/100)+1;$("xpFill").style.width=(xp%100)+"%";$("streakValue").textContent=progress.streak||0;$("completedValue").textContent=progress.completed||0;}
+function awardXP(amount,reason){progress.xp=(progress.xp||0)+amount;saveProgress();$("missionBadge").textContent="✨ "+reason+" +"+amount+" XP";}
+function completeLearningDay(){const today=new Date().toISOString().slice(0,10);if(progress.lastDay!==today){const yesterday=new Date(Date.now()-86400000).toISOString().slice(0,10);progress.streak=progress.lastDay===yesterday?(progress.streak||0)+1:1;progress.lastDay=today;}progress.completed=(progress.completed||0)+1;saveProgress();}
+renderProgress();
+function getApiBase(){return $("apiBase").value.trim().replace(new RegExp("/+$"),"");}
+function getModel(){return $("modelCustom").value.trim()||$("modelSelect").value.trim()||DEFAULT_AI_MODEL;}
+async function loadModels(){
+ const btn=$("loadModelsBtn");btn.disabled=true;btn.textContent="正在获取…";
+ try{
+  const key=$("apiKey").value.trim();
+  const url=key?getApiBase()+"/models":DEFAULT_AI_ENDPOINT+"/v1/models";
+  if(key&&!getApiBase())throw new Error("请先填写 API 服务地址。");
+  const headers=key?{"Authorization":"Bearer "+key}:{};
+  const res=await fetch(url,{headers});
+  if(!res.ok)throw new Error("获取模型列表失败（"+res.status+"）");
+  const data=await res.json();
+  const models=(data.data||data.models||[]).map(x=>typeof x==="string"?x:x.id||x.name).filter(id=>id&&!/(embedding|rerank|text-to-image|image-generation|stable-diffusion|whisper|speech|audio|music|video-generation|\\btts\\b|\\basr\\b)/i.test(id));
+  if(!models.length)throw new Error("服务商没有返回可识别的模型列表。");
+  const select=$("modelSelect"),previous=getModel(),custom=$("modelCustom");
+  const groups={};
+  models.forEach(id=>{const group=id.startsWith("Pro/")?"Pro":id.startsWith("Qwen/")?"Qwen":id.toLowerCase().includes("kimi")?"Kimi":id.toLowerCase().includes("deepseek")?"DeepSeek":"其他";(groups[group]||(groups[group]=[])).push(id)});
+  select.innerHTML="";
+  Object.entries(groups).forEach(([name,ids])=>{const og=document.createElement("optgroup");og.label=name;ids.forEach(id=>{const o=document.createElement("option");o.value=id;o.textContent=id;og.appendChild(o)});select.appendChild(og)});
+  if(models.includes(previous)){select.value=previous;custom.value="";}else if(previous&&!models.includes(previous)){custom.value=previous;}
+  $("apiHint").textContent="已从硅基流动账户获取 "+models.length+" 个模型。当前列表仅显示账户可调用的模型。";
+ }catch(e){$("apiHint").textContent=e.message+"。你仍可从预置列表选择，或手动填写模型 ID。"}
+ finally{btn.disabled=false;btn.textContent="刷新可用模型";}
+}
+async function testApi(){try{const answer=await callAI([{role:"user",content:"请只回复：API连接成功"}],0);$("apiHint").textContent="当前模型连接成功："+getModel()+"；回复："+answer.slice(0,100);}catch(e){$("apiHint").textContent="当前模型连接失败："+e.message;}}
+function addMsg(role,text,tag=""){const row=document.createElement("div");row.className="msg "+(role==="student"?"student":"");const av=document.createElement("div");av.className="avatar";av.textContent=role==="student"?"我":"AI";const b=document.createElement("div");b.className="bubble";if(tag){const t=document.createElement("div");t.className="tag";t.textContent=tag;b.appendChild(t)}const who=document.createElement("div");who.className="who";who.textContent=role==="student"?"你":"装懂同伴";b.appendChild(who);const body=document.createElement("div");body.textContent=text;b.appendChild(body);row.append(av,b);$("chat").appendChild(row);$("chat").scrollTop=$("chat").scrollHeight;return body}
+function setBusy(v){state.busy=v;$("sendBtn").disabled=v||state.phase!==1;$("startBtn").disabled=v;$("submitDiagnosis").disabled=v;$("submitTransfer").disabled=v;if(v){$("composerHint").innerHTML='<span class="loading"><span class="dot"></span>同伴正在组织语言…</span>'}else $("composerHint").textContent=state.phase===1?"继续追问，检查它的推理依据。":"当前阶段无需继续提问。"}
+function setPhase(n){state.phase=n;const labels=["阶段一：选择概念，开始挑战","阶段二：诊断性提问","阶段三：定位概念漏洞","阶段四：修正解释","阶段五：独立迁移挑战"];const desc=["选择高中数学或物理概念","通过连续追问检查关键条件、机制或证据","判断它的解释是否存在漏洞","依据科学原理重建正确解释","不依赖 AI，将概念应用到新情境"];$("stageTitle").textContent=labels[n];$("stageDesc").textContent=desc[n];$("statusPill").textContent=["等待开始","对话进行中","等待诊断","修正与反馈","独立完成"][n];[...$("steps").children].forEach((el,i)=>{el.className="step"+(i===n?" active":i<n?" done":"")});$("message").disabled=n!==1;$("sendBtn").disabled=n!==1||state.busy;$("diagnosisArea").classList.toggle("hidden",n!==2);$("transferArea").classList.toggle("hidden",n!==4);$("composer").classList.toggle("hidden",n===0||n>=2);if(n===2)$("notice").textContent="请独立完成诊断。AI 不会替你指出漏洞；如果暂时没有思路，可以回到对话中继续追问。";if(n===4)$("notice").textContent="迁移阶段不提供 AI 提示。请独立完成新情境问题，检验自己是否真正理解。"}
+async function callAI(messages,temperature=.7){
+ const key=$("apiKey").value.trim();
+ const custom=!!key;
+ const base=custom?getApiBase():DEFAULT_AI_ENDPOINT;
+ if(!base)throw new Error("默认 AI 服务暂不可用，请稍后重试。");
+ const model=getModel();
+ const headers={"Content-Type":"application/json"};
+ if(custom)headers["Authorization"]="Bearer "+key;
+ const endpoint=custom?base+"/chat/completions":base+"/v1/chat/completions";
+ const res=await fetch(endpoint,{method:"POST",headers,body:JSON.stringify({model,messages,temperature,stream:false})});
+ if(!res.ok){let t=await res.text();throw new Error("模型请求失败（"+res.status+"）："+t.slice(0,260))}
+ const data=await res.json();return data.choices?.[0]?.message?.content||"我刚刚没组织好语言，你能换个方式问问吗？"
+}
+const systemPrompt=()=>`你是面向高中学生的${state.subject}“装懂同伴”。当前学习概念：${state.concept}。你必须始终记住并使用本轮最初给出的原题、数据、条件、你的答案和推理过程。错误设计必须隐蔽且有思考价值：建立在合理的局部观察上，但遗漏适用条件、混淆相关物理量/变量、忽略实验误差或过度推广某个结论。不要使用“必然”“一定”“完全不可能”等绝对词制造显眼错误。错误要让学生结合题干条件、数据和过程才能发现，而不是一眼看出违反定义。
+
+【角色与回答规则】
+1. 你是一个自信、表达自然、但对题目中的一个关键知识点理解有偏差的同学，不是老师，不要自称AI。
+2. 学生每次追问，你都必须先直接回答他问的那个具体问题，再结合原题中的数值、条件、公式、实验现象或推理步骤解释你为什么这样想。严禁只重复“我依据这个概念的规律”“题目条件足够”等空话。
+3. 回答时必须点名原题中的相关信息。例如数学题要谈判别式、根的和与积或具体系数；物理题要谈受力、电路连接或实验数据；化学生物题要谈反应条件、物质变化、变量或遗传关系。
+4. 你要维护自己最初的错误观点，但错误必须是看似合理的细微偏差，不要写成明显违反定义的断言。不要主动把漏洞说穿，也不要突然承认错误或公布正确答案。
+5. 如果学生的问题指出了一个具体反例或推理矛盾，你要尝试解释/辩护，但不能无视他的问题；可以承认“这个情况我还没考虑到”，然后提出一个可检验的解释。
+6. 每次回答通常3—6句，包含针对问题的回应和至少一个原题细节；措辞审慎自然，可使用“我倾向于”“在这组条件下”“看起来可以”等表达，不要依靠绝对化措辞制造错误。
+7. 不要伪造题目中不存在的数据。若原题没有给出某个量，要明确说题目未提供，不要编造。
+8. 学生提交诊断后，后续评价由系统处理。只输出自然中文。`;
+const examBank={
+"理想气体状态变化":{
+ title:"2024年普通高中学业水平等级性考试（北京卷）物理第3题",
+ meta:"2024年北京高考物理真题 · 第一部分第3题",
+ url:"https://cdn.zgkao.com/17199700271072024%E5%8C%97%E4%BA%AC%E9%AB%98%E8%80%83%E7%9C%9F%E9%A2%98%E7%89%A9%E7%90%86%EF%BC%88%E6%95%99%E5%B8%88%E7%89%88%EF%BC%89.pdf",
+ page:1,
+ body:`<p>一个气泡从恒温水槽的底部缓慢上浮，将气泡内的气体视为理想气体，且气体分子个数不变，外界大气压不变。在上浮过程中气泡内气体（　　）</p><div class="q-options"><div>A．内能变大</div><div>B．压强变大</div><div>C．体积不变</div><div>D．从水中吸热</div></div>`,
+ analysis:"我觉得这题主要看气泡上浮时外界压强的变化。题目说水槽恒温、气体分子数不变，所以我会用理想气体状态方程分析。气泡上升时体积会变大，温度保持不变，因此内能没有变化。我的理解是，气体膨胀时外界对气体做功，所以气体需要向外放热；这应该能解释它上浮过程中的能量变化。"
+},
+"牛顿第二定律与连接体":{
+ title:"2024年普通高中学业水平等级性考试（北京卷）物理第4题",
+ meta:"2024年北京高考物理真题 · 第一部分第4题",
+ url:"https://cdn.zgkao.com/17199700271072024%E5%8C%97%E4%BA%AC%E9%AB%98%E8%80%83%E7%9C%9F%E9%A2%98%E7%89%A9%E7%90%86%EF%BC%88%E6%95%99%E5%B8%88%E7%89%88%EF%BC%89.pdf",
+ page:1,
+ body:`<p>如图所示，飞船与空间站对接后，在推力 <span class="formula">F</span> 作用下一起向前运动。飞船和空间站的质量分别为 <span class="formula">m</span> 和 <span class="formula">M</span>，则飞船和空间站之间的作用力大小为（　　）</p><div class="diagram">飞船（质量 m）　⇄　空间站（质量 M）<br/><span class="hint">两者对接后作为整体，在推力 F 作用下共同向前运动（原卷配有示意图）</span></div><div class="q-options"><div>A．<span class="formula">MF/(M+m)</span></div><div>B．<span class="formula">mF/(M+m)</span></div><div>C．<span class="formula">MF/m</span></div><div>D．<span class="formula">mF/M</span></div></div>`,
+ analysis:"我先把飞船和空间站看成整体，整体加速度可以由外力F除以总质量m+M得到。接下来要求两者之间的作用力，我倾向于选飞船作为研究对象，用飞船质量m乘以整体加速度，得到mF/(m+M)。因为飞船和空间站之间的相互作用力是连接两部分运动的关键，我觉得这样选研究对象最直接。"
+},
+"理想变压器":{
+ title:"2024年普通高中学业水平等级性考试（北京卷）物理第5题",
+ meta:"2024年北京高考物理真题 · 第一部分第5题",
+ url:"https://cdn.zgkao.com/17199700271072024%E5%8C%97%E4%BA%AC%E9%AB%98%E8%80%83%E7%9C%9F%E9%A2%98%E7%89%A9%E7%90%86%EF%BC%88%E6%95%99%E5%B8%88%E7%89%88%EF%BC%89.pdf",
+ page:1,
+ body:`<p>如图甲所示，理想变压器原线圈接在正弦式交流电源上，输入电压 <span class="formula">u</span> 随时间 <span class="formula">t</span> 变化的图像如图乙所示，副线圈接规格为“6 V，3 W”的灯泡。若灯泡正常发光，下列说法正确的是（　　）</p><div class="diagram">原线圈输入电压为正弦交流电<br/><span class="formula">U<sub>m</sub>=24√2 V</span><br/><span class="hint">副线圈接“6 V，3 W”灯泡；灯泡正常发光</span></div><div class="q-options"><div>A．原线圈两端电压的有效值为 <span class="formula">24√2 V</span></div><div>B．副线圈中电流的有效值为 <span class="formula">0.5 A</span></div><div>C．原、副线圈匝数之比为 <span class="formula">1∶4</span></div><div>D．原线圈的输入功率为 <span class="formula">12 W</span></div></div>`,
+ analysis:"灯泡标注6 V、3 W，正常发光时副线圈电压是6 V，电流应该是3除以6，也就是0.5 A。这里我同意B项的数值。不过我从图像读出原线圈电压的最大值是24√2 V，就直接把它当成有效值来使用了；所以我认为原线圈有效值也是24√2 V。接着我会用这个数值去判断原副线圈的匝数比。"
+},
+"概率与统计":{
+ title:"2024年北京市高考数学第18题",
+ meta:"2024年北京高考数学真题 · 第18题",
+ url:"https://www.bjxhbt.com/m/a51b7a995b3f49b28188e4270fd73e88_20240606111435.pdf",
+ page:4,
+ body:`<p>某保险公司为了了解该公司某种保险产品的索赔情况，从合同保险期限届满的保单中随机抽取1000份，记录并整理这些保单的索赔情况，获得数据如下表：</p><table><thead><tr><th>索赔次数</th><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th></tr></thead><tbody><tr><th>保单份数</th><td>800</td><td>100</td><td>60</td><td>30</td><td>10</td></tr></tbody></table><p>假设：一份保单的保费为0.4万元；前三次索赔时，保险公司每次赔偿0.8万元；第四次索赔时，保险公司赔偿0.6万元。假设不同保单的索赔次数相互独立。用频率估计概率。</p><div class="q-part">（1）估计一份保单索赔次数不少于2的概率；</div><div class="q-part">（2）一份保单的毛利润定义为这份保单的保费与赔偿总金额之差。<br/>（i）记 <span class="formula">X</span> 为一份保单的毛利润，估计 <span class="formula">E(X)</span>；<br/>（ii）如果无索赔的保单的保费减少4%，有索赔的保单的保费增加20%，试比较这种情况下一份保单毛利润的数学期望估计值与（i）中 <span class="formula">E(X)</span> 估计值的大小。（结论不要求证明）</div>`,
+ analysis:"我会先用样本频率估计各类保单的索赔概率，再计算毛利润的数学期望。表格里四次索赔的保单只有10份，占比很低；计算时我倾向于把每次赔偿都按0.8万元处理，这样能统一计算前三次赔偿的支出。第四次赔偿金额与前三次略有不同，但它出现的频率较低，我觉得对期望值的影响可以先忽略。"
+},
+"椭圆与解析几何":{
+ title:"2024年北京市高考数学第19题",
+ meta:"2024年北京高考数学真题 · 第19题",
+ url:"https://www.bjxhbt.com/m/a51b7a995b3f49b28188e4270fd73e88_20240606111435.pdf",
+ page:5,
+ body:`<p>已知椭圆 <span class="formula">E: x²/a²+y²/b²=1</span>（<span class="formula">a&gt;b&gt;0</span>），以椭圆 <span class="formula">E</span> 的焦点和短轴端点为顶点的四边形是边长为2的正方形。过点 <span class="formula">(0,t)</span>（<span class="formula">t&gt;2</span>）且斜率存在的直线与椭圆 <span class="formula">E</span> 交于不同的两点 <span class="formula">A、B</span>，过点 <span class="formula">A</span> 和 <span class="formula">C(0,1)</span> 的直线 <span class="formula">AC</span> 与椭圆的另一个交点为 <span class="formula">D</span>。</p><div class="q-part">（1）求椭圆 <span class="formula">E</span> 的方程及离心率；</div><div class="q-part">（2）若直线 <span class="formula">BD</span> 的斜率为0，求 <span class="formula">t</span> 的值。</div>`,
+ analysis:"题目给出椭圆焦点和短轴端点构成边长为2的正方形。我知道椭圆中a²=b²+c²，而且短半轴b和焦距c都等于2，所以可以先求出a²=8。于是我认为椭圆方程是x²/8+y²/4=1。后面联立直线与椭圆时，我会直接用这个方程继续计算。"
+},
+"导数及其应用":{
+ title:"2024年北京市高考数学第20题",
+ meta:"2024年北京高考数学真题 · 第20题",
+ url:"https://www.bjxhbt.com/m/a51b7a995b3f49b28188e4270fd73e88_20240606111435.pdf",
+ page:5,
+ body:`<p>设函数 <span class="formula">f(x)=ln(1+x)/(x+k)</span>（<span class="formula">x+k≠0</span>），直线 <span class="formula">l</span> 是曲线 <span class="formula">y=f(x)</span> 在点 <span class="formula">(t,f(t))</span>（<span class="formula">t&gt;0</span>）处的切线。</p><div class="q-part">（1）当 <span class="formula">k=-1</span> 时，求 <span class="formula">f(x)</span> 的单调区间。</div><div class="q-part">（2）求证：<span class="formula">l</span> 不经过点 <span class="formula">(0,0)</span>。</div><div class="q-part">（3）当 <span class="formula">k=1</span> 时，设点 <span class="formula">A(t,f(t))</span>（<span class="formula">t&gt;0</span>），<span class="formula">C(0,f(t))</span>，<span class="formula">O(0,0)</span>，<span class="formula">B</span> 为 <span class="formula">l</span> 与 <span class="formula">y</span> 轴的交点，<span class="formula">S_{△ACO}</span> 与 <span class="formula">S_{△ABO}</span> 分别表示 △ACO 与 △ABO 的面积。是否存在点 <span class="formula">A</span> 使得 <span class="formula">S_{△ACO}/S_{△ABO}=2/15</span> 成立？若存在，这样的点 <span class="formula">A</span> 有几个？</div><p class="hint">参考数据：1.09 &lt; ln 3 &lt; 1.10，1.60 &lt; ln 5 &lt; 1.61，1.94 &lt; ln 7 &lt; 1.95。</p>`,
+ analysis:"我先根据题目给出的函数表达式求导，再利用导数研究单调性和切线。对于第（2）问，切线是否经过原点，可以转化为切线方程中的截距是否为0。我倾向于认为只要切点横坐标t为正、函数值f(t)也为正，切线就不会经过原点；因为切点在第一象限，切线的位置也会受到这个条件限制。"
+}
+};
+
+const authoredVariants={
+"理想气体状态变化":{title:"概念变式练习（非真题）：密闭气缸中的等温变化",meta:"原创练习 · 理想气体状态方程",url:"https://www.zktiku.com.cn/document/realtopic",page:1,body:"<p>一定质量的理想气体被封闭在带有活塞的气缸中。缓慢推动活塞，使气体温度始终保持不变，体积由 4.0 L 减小到 2.0 L。忽略活塞摩擦，判断气体压强如何变化，并说明内能变化及热量传递方向。</p><p class='hint'>本题为原创概念练习，不是高考真题。</p>",analysis:"体积减半而温度保持不变，根据pV=nRT，我认为压强会变为原来的两倍。理想气体内能只与温度有关，所以内能不变。活塞压缩气体时外界对气体做功，我倾向于认为气体仍然需要向外放热，才能维持等温。"},
+"牛顿第二定律与连接体":{title:"概念变式练习（非真题）：水平面上的连接体",meta:"原创练习 · 整体法与隔离法",url:"https://www.zktiku.com.cn/document/realtopic",page:1,body:"<p>质量分别为 2 kg 和 3 kg 的两个物块通过轻绳连接，放在光滑水平面上。对 3 kg 物块施加水平向右的 10 N 拉力，系统保持相对静止。求系统加速度及轻绳张力，并说明整体法和隔离法各自适用的步骤。</p><p class='hint'>本题为原创概念练习，不是高考真题。</p>",analysis:"我先把两个物块看成整体，得到加速度a=10/(2+3)=2 m/s²。再隔离2 kg物块，轻绳张力应该是2×2=4 N。因为外力作用在3 kg物块上，我觉得也可以直接用3 kg乘以系统加速度来求绳子的拉力。"},
+"理想变压器":{title:"概念变式练习（非真题）：交流电与变压器",meta:"原创练习 · 有效值与匝数比",url:"https://www.zktiku.com.cn/document/realtopic",page:1,body:"<p>理想变压器原线圈接入有效值为 220 V 的正弦交流电源，原、副线圈匝数比为 5:1，副线圈连接阻值为 8 Ω 的电阻。求副线圈电压有效值和电流有效值，并说明若给出的是电压峰值应如何处理。</p><p class='hint'>本题为原创概念练习，不是高考真题。</p>",analysis:"原副线圈匝数比为5:1，所以副线圈电压有效值为44 V，电流为5.5 A。理想变压器只改变电压和电流，不改变频率。我觉得如果题目给出的是峰值，也可以直接按匝数比计算，因为峰值和有效值都表示电压大小。"},
+"概率与统计":{title:"概念变式练习（非真题）：产品质量抽检",meta:"原创练习 · 频率估计与数学期望",url:"https://www.zktiku.com.cn/document/realtopic",page:1,body:"<p>某工厂随机抽查 200 件产品，其中 0、1、2 件次品的产品批次数分别为 170、24、6。每批产品销售收入为 100 元；每出现一件次品需赔付 20 元。请用样本频率估计一批产品出现至少 1 件次品的概率，并估计单批净收益的数学期望。</p><p class='hint'>本题为原创概念练习，不是高考真题。</p>",analysis:"至少出现1件次品的批次有24+6=30批，所以概率估计为0.15。计算净收益期望时，我会把有次品的批次统一按赔付20元处理，因为两件次品的批次只有6批，占比不高。我觉得用平均赔付一次近似就足以反映整体情况。"},
+"椭圆与解析几何":{title:"概念变式练习（非真题）：椭圆参数关系",meta:"原创练习 · a、b、c与离心率",url:"https://www.zktiku.com.cn/document/realtopic",page:1,body:"<p>已知椭圆 x²/25+y²/9=1。求长半轴、短半轴、焦半距和离心率；若点P在椭圆上，说明如何利用椭圆定义判断点P到两个焦点的距离之和。</p><p class='hint'>本题为原创概念练习，不是高考真题。</p>",analysis:"由标准方程可知a=5、b=3，所以c²=a²-b²=16，焦半距c=4，离心率e=4/5。椭圆定义中，点到两个焦点距离之和等于长轴长度。我觉得这里也可以把焦半距当成焦点到椭圆中心的距离，因此两段距离之和应该接近4。"},
+"导数及其应用":{title:"概念变式练习（非真题）：导数与切线",meta:"原创练习 · 导数、单调性与切线",url:"https://www.zktiku.com.cn/document/realtopic",page:1,body:"<p>设函数 f(x)=x²−4x+3。求函数的单调区间，并写出曲线在 x=1 处的切线方程。进一步判断该切线是否经过原点。</p><p class='hint'>本题为原创概念练习，不是高考真题。</p>",analysis:"函数导数为f'(x)=2x−4，所以x小于2时递减、大于2时递增。x=1处函数值为0，导数为-2，切线方程是y=-2(x-1)。我认为这条切线经过原点，因为切点的函数值就是0，切点在x轴上。"}
+};
+const questionPools=Object.fromEntries(Object.keys(examBank).map(k=>[k,[examBank[k],authoredVariants[k]]]));
+function pickQuestion(concept){const pool=questionPools[concept]||[examBank[concept]];const last=localStorage.getItem("lastQuestion_"+concept);let choices=pool.filter(q=>q.title!==last);if(!choices.length)choices=pool;const q=choices[Math.floor(Math.random()*choices.length)];localStorage.setItem("lastQuestion_"+concept,q.title);return q;}
+
+function showOriginalQuestion(){
+ const q=state.activeQuestion||examBank[state.concept];if(!q)return;
+ $("originalQuestionCard").classList.remove("hidden");
+ $("originalTitle").textContent=q.title;$("originalMeta").textContent=q.meta;$("originalLink").textContent=q.meta.includes("非真题")?"原创练习 · 无原卷链接":"查看原卷 PDF（备用）";$("originalLink").style.pointerEvents=q.meta.includes("非真题")?"none":"auto";$("originalLink").style.textDecoration=q.meta.includes("非真题")?"none":"underline";$("originalLink").style.color=q.meta.includes("非真题")?"#687789":"#315f9f";$("questionSourceNote").textContent=q.meta.includes("非真题")?"本题为原创变式练习，不是高考真题。下方同伴分析为教学设计内容。":"题干与选项直接呈现在网页中；可通过右上角链接核对原卷。下方同伴分析为教学设计内容，不属于原卷内容。";
+ $("originalLink").href=q.url+"#page="+q.page;
+ $("originalQuestionBody").innerHTML=q.body;
+}
+async function start(){state.subject=$("subject").value;state.concept=$("concept").value;state.level="高中";state.history=[];state.turns=0;state.hints=0;state.initial=null;state.diagnosis=null;state.report=null;state.attachments=[];state.earnedDiagnosis=false;state.earnedTransfer=false;state.activeQuestion=pickQuestion(state.concept);$("chat").innerHTML="";$("welcome").classList.add("hidden");$("reportArea").classList.add("hidden");$("transferArea").classList.add("hidden");$("diagnosisArea").classList.add("hidden");$("transferAnswer").value="";$("transferFormula").value="";$("transferFiles").value="";$("attachmentPreview").innerHTML="";showOriginalQuestion();setPhase(1);addMsg("student",`我想考考你：${state.concept}。请你结合上方题目，解释你的解题思路。`);setBusy(true);
+try{const first=state.activeQuestion.analysis;state.initial=first;state.history=[{role:"assistant",content:first}];addMsg("ai",first,"同伴对本轮题目的分析");$("notice").textContent="题目已载入。当前选择模型："+getModel()+"。请结合上方题目，追问同伴分析中的依据与逻辑。";}catch(e){addMsg("ai","载入题目时遇到问题："+e.message);setPhase(0)}finally{setBusy(false)}}
+async function send(){const msg=$("message").value.trim();if(!msg||state.phase!==1||state.busy)return;$("message").value="";addMsg("student",msg);state.turns++;state.history.push({role:"user",content:msg});setBusy(true);try{let answer;if(true){answer=await callAI([{role:"system",content:systemPrompt()},...state.history]);}else{answer=mockReply(msg,state.turns)}state.history.push({role:"assistant",content:answer});addMsg("ai",answer);if(state.turns>=1){$("finishChatBtn").classList.remove("hidden");}
+if(state.turns>=2&&state.turns%2===0){$("notice").textContent="想一想：你的问题是否触及了关键条件、概念机制或证据？如果还没有，可以继续追问。"}if(/我认为|漏洞|错误|不对|应该是|因为|原理/.test(msg)&&state.turns>=2){$("notice").textContent="你似乎开始检验它的解释了。可以继续追问，也可以点击“我准备好诊断了”进入下一步。";$("composerHint").textContent="当你认为已经找到问题时，点击下方按钮提交诊断。";$("finishChatBtn").classList.remove("hidden");}}catch(e){addMsg("ai","这次没有成功回复："+e.message+"。请检查网络、Key 或模型名称后重试。")}finally{setBusy(false)}}
+function mockReply(msg,turn){
+ const q=msg;
+ const replies={
+ "理想气体状态变化":()=>{
+  if(/压强|体积|状态方程|pV|温度/.test(q))return "我主要依据的是题目中的“恒温水槽”和“气体分子个数不变”。气泡上升时外界水压降低，所以气泡体积会变大；但我认为体积膨胀时外界对气体做功，气体就应该放出热量。这里我把气体膨胀时的做功方向作为判断依据。";
+  if(/内能|热量|吸热|放热|热力学第一定律/.test(q))return "我知道理想气体的内能与温度有关，题目又说水槽恒温，所以内能变化为零。我的理解是气泡上升时体积增大，外界压力对气体做功，因此气体需要向水中放出热量来维持温度。";
+  return "原题的关键条件是气泡缓慢上浮、温度不变、气体分子数不变。我把它看作一个等温变化过程，体积会随外界压强降低而增大。至于热量传递，我倾向于根据气体膨胀时的做功方向判断。";
+ },
+ "牛顿第二定律与连接体":()=>{
+  if(/作用力|相互作用|飞船|空间站|质量|加速度/.test(q))return "我先对飞船和空间站整体列式，得到共同加速度a=F/(m+M)。再看飞船，飞船质量是m，所以我用ma求飞船与空间站之间的作用力。我的想法是先选质量和运动状态都比较明确的飞船，列式会更直接。";
+  return "我没有改变整体加速度的计算，还是用外力F除以总质量m+M。分开分析时，我把飞船质量m作为研究对象的质量，因此认为相互作用力就是m乘以共同加速度。你可以看看这个力是否就是飞船所受的合力。";
+ },
+ "理想变压器":()=>{
+  if(/有效值|最大值|峰值|24|电压/.test(q))return "我从图像读到输入电压的最大值是24√2 V。因为图像最高点就是24√2 V，所以我直接把它作为原线圈两端的有效值。正弦交流电的图像是周期变化的，我认为用最大值表示电压大小已经足够。";
+  if(/匝数|原线圈|副线圈|变比/.test(q))return "我会用理想变压器的电压与匝数关系来判断。灯泡正常发光时副线圈电压是6 V，原线圈电压我取图像最大值24√2 V，所以匝数比就是两边电压的比值。我暂时没有再把最大值换算成有效值。";
+  return "灯泡正常发光说明副线圈电压和电流可以从额定值求出。我的思路是先用P=UI求副线圈电流，再结合输入电压图像求原线圈的电压和匝数比。我读图时直接使用了波峰对应的电压数值。";
+ },
+ "椭圆与解析几何":()=>{
+  if(/焦点|短轴|正方形|离心率|a|b|c|方程/.test(q))return "我根据焦点和短轴端点构成边长为2的正方形，认为短半轴b=2、焦半距c=2。椭圆满足a²=b²+c²，所以a²=8，方程就是x²/8+y²/4=1。这里我把正方形的边长直接当成了短半轴和焦半距。";
+  if(/直线|斜率|联立|交点|A|B|D/.test(q))return "我会先把过(0,t)的直线设成y=kx+t，再和椭圆方程联立。因为A、B是两个交点，得到一元二次方程后可以用韦达定理处理。我的计算会沿用刚才得到的椭圆方程x²/8+y²/4=1。";
+  return "我先利用椭圆的基本关系a²=b²+c²，再根据焦点、短轴端点和正方形的边长确定参数。得到椭圆方程后，第二问就可以把直线方程代入椭圆，结合交点坐标和斜率条件求参数t。";
+ },
+"概率与统计":()=>{
+  if(/第四次|0.6|0.8|赔偿|赔付|期望|毛利润/.test(q))return "我把前三次每次赔偿0.8万元作为统一的赔偿标准来算毛利润。表格中四次索赔只有10份，相比1000份样本占比很低，所以我觉得第四次赔偿0.6万元和前三次0.8万元之间的差异对期望值影响不大。";
+  if(/概率|频率|不少于2|1000|样本/.test(q))return "我按频率估计概率。索赔不少于2次的保单有60+30+10份，总共1000份，所以概率估计为0.1。这里我把样本频率直接当作总体概率的估计值。";
+  return "我主要根据表格里的频数来估计每种索赔次数的概率，再把各类保单的毛利润加权平均。计算时我先把每类保单的赔偿总额列出来，再乘以对应频率。";
+ },
+ "导数及其应用":()=>{
+  if(/切线|原点|截距|斜率/.test(q))return "我把切线写成点斜式：y=f(t)+f'(t)(x-t)。要判断它是否经过原点，就要看截距f(t)-tf'(t)。不过我认为题目给出t>0，而且函数值为正，切点位于第一象限，因此切线不经过原点的结论应该比较稳妥。";
+  if(/单调|导数|求导|极值|增函数|减函数/.test(q))return "我会先求f'(x)，再根据导数正负判断单调性。这里函数包含对数项和分母中的参数k，我倾向于先分别判断分子、分母的符号，再结合定义域确定导数符号；这样可以减少展开计算。";
+  return "原题的关键是函数f(x)=ln(1+x)/(x+k)，以及切点横坐标t>0。求导时要同时考虑对数函数和分母，之后再代入切点坐标写切线方程。我觉得只要切点在第一象限，切线的位置就能由这个几何信息大致判断。";
+ },
+ "一元二次方程":()=>{
+  if(/判别式|delta|Δ|不等实数根|两个实根/.test(q))return "我这里把两个判断连在了一起：Δ>0确实能说明方程有两个不相等的实数根。我进一步认为它们都是正数，是因为我看这道方程x²-5x+6=0时，两个根刚好是2和3，而且一次项系数是负的，所以我觉得只要判别式大于0，根就会像这道题一样都在0的右边。";
+  if(/和|积|韦达|符号|正根|负根/.test(q))return "我没有单独检查根的和与积。我主要是从方程x²-5x+6=0的系数来判断：一次项系数是-5，常数项是6，我把它们和这道题算出的2、3联系起来，觉得根应该都是正的。不过我认为判别式大于0是最关键的，因为它保证了有两个实数根。";
+  return "就拿原题x²-5x+6=0来说，我先算出Δ=(-5)²-4×1×6=1，大于0，所以有两个不同实根；再结合这道题的系数，我判断它们是2和3。我把这个例子推广到了所有Δ>0的方程，觉得两个根都会是正数。";
+ },
+ "牛顿第二定律":()=>{
+  if(/质量|加速度|4\s*kg|2\s*kg|6\s*n|合力/.test(q))return "原题里合力保持6 N，质量从2 kg变成4 kg。我认为质量变大后惯性也变大，物体需要更大的加速度才能改变原来的运动状态，所以我把加速度也按质量的倍数放大了。我的判断主要是把“惯性更大”理解成“加速度更大”，而没有重新比较合力与质量的比值。";
+  return "我说的是原题给出的6 N合力和2 kg质量。第一次我用6÷2得到3 m/s²；质量变成4 kg后，我觉得物体惯性更大，因此加速度也应该更大。我认为合力没变并不意味着加速度一定减小，因为质量本身也影响运动状态变化。";
+ },
+ "浮力":()=> "我指的是原题中物体排开水的体积是100 cm³。阿基米德原理里浮力等于排开液体的重力，所以我先用水的密度和排开体积算出1 N。至于换成密度更大的材料，我认为物体更重会让它对水产生更大的作用，因此浮力也会增加；我没有把“排开液体的体积是否变化”单独考虑进去。",
+ "串联与并联电路":()=> "原题说的是两个灯泡串联，而且电流表分别放在第一个灯泡前和两个灯泡之间。因为串联电路只有一条通路，我认为两处电流表读数应该相同；但我又把灯泡消耗电能理解成电流逐渐减少，所以觉得后一个灯泡中的电流会变小。这里我依据的是灯泡会发光、会消耗电能这个现象。",
+ "质量守恒定律":()=> "原题特别说的是碳酸钙和盐酸反应，会生成二氧化碳。我认为如果在敞口容器中称量，二氧化碳逸出后天平读数会变小，所以我把“测得的装置质量减少”理解成“反应前后总质量减少”。我没有把逸出的气体也作为生成物纳入整个反应体系。",
+ "酸碱中和反应":()=> "原题是向氢氧化钠溶液中加入少量盐酸。我认为酸和碱一旦发生中和，就会生成盐和水，因此溶液会变成中性。我的判断重点是看到了中和反应发生，却没有继续比较盐酸和氢氧化钠的物质的量，也没有判断反应物是否有剩余。",
+ "溶解度":()=> "原题限定温度不变，而且溶液已经饱和。我认为搅拌能让固体和水接触得更充分，原来没溶解的部分就会继续溶解；我把溶解快慢和一定温度下最多能溶解多少混在一起了，所以认为搅拌能提高溶解度。",
+ "光合作用":()=> "原题说植物夜晚处于黑暗中。因为没有光，光反应无法进行，光合作用速率会下降甚至停止。我把光合作用停止进一步理解成植物夜间不再进行任何与能量有关的过程，所以判断呼吸作用也停止了；我没有区分光合作用和细胞呼吸对光照条件的不同要求。",
+ "细胞呼吸":()=> "原题中的种子在黑暗中萌发，没有光照。我认为植物主要通过光合作用获得有机物和能量，黑暗中光合作用不能进行，所以种子不能获得能量。我没有考虑种子自身储存的有机物，也没有把分解有机物释放能量的过程和制造有机物的过程区分开。",
+ "显性与隐性遗传":()=> "原题中A是显性、a是隐性，所以Aa表现显性性状，这一点我比较确定。我进一步认为显性性状在人群中更常见，是因为一个显性等位基因就能表现出来，因此它传递的机会似乎更大。我没有区分“显隐性关系”和“某种等位基因在群体中的频率”。",
+ "一次函数":()=> "原题函数是y=2x+1。当x=0时，y=1，所以交点是(0,1)。我仍然觉得它会经过原点，因为一次函数图像是一条直线，而我把“直线”与“经过原点”联系起来了；我没有把原点(0,0)代入原函数检验。",
+ "相似三角形":()=> "原题说两个三角形的对应角分别相等，所以我判断它们相似。相似意味着形状相同，我就进一步把它理解成大小也相同，因此认为对应边长度相等。我没有区分对应边成比例和对应边相等这两个条件。",
+ };
+ const fn=replies[state.concept];
+ if(fn)return fn();
+ return `回到刚才那道关于“${state.concept}”的题目，我当时是根据题目给出的条件“${state.initial.slice(0,90)}”作出判断的。你问的这个问题涉及我推理中的关键一步：我把题目中的这个条件理解成了支持原结论的依据。我的理解是，题目给出的信息已经足以让我这样判断；如果你认为不成立，可以指出具体哪一个条件不能推出我的结论。`;
+}
+async function submitDiagnosis(){const error=$("errorText").value.trim(),reason=$("reasonText").value.trim(),repair=$("repairText").value.trim();if(!error||!reason||!repair){$("notice").textContent="请完成漏洞识别、错误原因和正确解释三个部分。";return}state.diagnosis={error,reason,repair};if(!state.earnedDiagnosis){awardXP(20,"完成漏洞诊断");state.earnedDiagnosis=true;}addMsg("student","我的诊断：\\n漏洞："+error+"\\n原因："+reason+"\\n正确解释："+repair);setBusy(true);try{let feedback;if(true){feedback=await callAI([{role:"system",content:"你是严谨、鼓励性的高中"+state.subject+"教师。依据原题与对话，评价学生的诊断性提问、错误识别和科学解释三个维度，每项0-4分，说明理由，指出遗漏与准确之处。不要直接夸大分数。请勿把AI编写的同伴分析说成原卷内容。只输出诊断反馈，不要生成迁移题。"},{"role":"user",content:"原卷题目："+(state.activeQuestion||examBank[state.concept]).title+"\\n原题来源："+(state.activeQuestion||examBank[state.concept]).url+"\\n同伴分析："+state.initial+"\\n对话："+JSON.stringify(state.history)+"\\n学生诊断："+JSON.stringify(state.diagnosis)}]);}else{feedback="内置体验模式：你已提交对同伴推理的诊断。请核对自己是否指出了具体漏洞、说明了相关公式/条件，并给出严谨的修正。连接模型后可获得逐项反馈。";}addMsg("ai",feedback,"诊断反馈");state.report=feedback;
+let transfer;if(true){transfer=await callAI([{role:"system",content:"你是高中"+state.subject+"教师。围绕概念“"+state.concept+"”设计一道全新的独立迁移题。题目应改变情境或条件，考查相同核心原理，难度适中偏上，数据完整、可独立作答。不要复制刚才原卷题，不要给答案。开头注明“AI生成迁移练习（非真题）”。只输出题目。"},{"role":"user",content:"原卷题目："+examBank[state.concept].title+"\\n学生诊断："+JSON.stringify(state.diagnosis)}]);}else{transfer=({
+"理想气体状态变化":"AI生成迁移练习（非真题）\\n一定质量的理想气体经历一个缓慢变化过程，初态为p₁、V₁、T₁，末态为p₂、V₂、T₂。请写出状态方程，并分析：若温度保持不变而体积增大，压强如何变化？气体内能是否变化？说明判断依据。",
+"牛顿第二定律与连接体":"AI生成迁移练习（非真题）\\n水平面上有质量为m₁、m₂的两个物块由轻绳连接，受到水平拉力F作用并一起运动，忽略摩擦。请分别选取整体和单个物块为研究对象，求系统加速度及绳中张力，并说明两种受力分析如何相互验证。",
+"理想变压器":"AI生成迁移练习（非真题）\\n一台理想变压器原线圈接正弦交流电源，原线圈电压最大值为100√2 V，副线圈匝数是原线圈的1/5。副线圈接一个电阻为10 Ω的纯电阻负载。求副线圈电压的有效值和负载电流，并说明为什么不能直接把原线圈电压最大值代入变压器电压关系。",
+"概率与统计":"AI生成迁移练习（非真题）\\n某服务机构抽查200份合同，记录索赔次数为0次、1次、2次、3次的频数分别为150、30、15、5。每份合同收入0.5万元，前三次每次赔付0.6万元，第三次以后不再赔付。请用样本频率估计索赔次数不少于2次的概率，并计算单份合同利润的数学期望。",
+"椭圆与解析几何":"AI生成迁移练习（非真题）\\n已知椭圆x²/25+y²/9=1。求其焦点坐标和离心率；若过点(0,4)的直线y=kx+4与椭圆交于A、B两点，写出联立后的一元二次方程，并说明如何利用韦达定理表示x_A+x_B与x_Ax_B。",
+"导数及其应用":"AI生成迁移练习（非真题）\\n设函数f(x)=ln(x+1)/(x+2)，x>−1。请利用导数判断函数的单调区间，并写出曲线上任一点处切线的方程。进一步说明，判断切线是否经过原点需要检查什么条件。"
+})[state.concept];}
+state.transfer=transfer;$("transferQuestion").textContent=transfer+"\\n\\n（本题为本 Demo 生成的迁移练习，不是高考原题。）";setPhase(4);$("notice").textContent="诊断反馈已生成。现在请独立完成迁移练习；可以输入公式、上传图片或 PDF。";}catch(e){addMsg("ai","评价请求失败："+e.message+"。请重试提交。");}finally{setBusy(false)}}
+async function readAttachments(files){state.attachments=[];$("attachmentPreview").innerHTML="";for(const file of files){const item={name:file.name,type:file.type||"",text:"",dataUrl:null};if(file.type.startsWith("image/")){item.dataUrl=await new Promise((resolve,reject)=>{const fr=new FileReader();fr.onload=()=>resolve(fr.result);fr.onerror=reject;fr.readAsDataURL(file)});}else if(file.type==="application/pdf"||file.name.toLowerCase().endsWith(".pdf")){if(!window.pdfjsLib)throw new Error("PDF 解析组件未加载，请稍后重试，或将 PDF 转为图片上传。");const buf=await file.arrayBuffer();const pdf=await pdfjsLib.getDocument({data:buf}).promise;let pages=[];for(let p=1;p<=pdf.numPages;p++){const page=await pdf.getPage(p);const tc=await page.getTextContent();pages.push(tc.items.map(x=>x.str).join(" "));}item.text="[PDF附件："+file.name+"]\\n"+pages.join("\\n");}else{item.text="[文本附件："+file.name+"]\\n"+await file.text();}state.attachments.push(item);const div=document.createElement("div");div.className="attachment-item";if(item.dataUrl){const img=document.createElement("img");img.src=item.dataUrl;div.appendChild(img)}const label=document.createElement("span");label.textContent=file.name+" · "+(item.dataUrl?"图片":item.text.length+"字已读取");div.appendChild(label);$("attachmentPreview").appendChild(div);}}
+async function submitTransfer(){const ans=$("transferAnswer").value.trim(),formula=$("transferFormula").value.trim();if(!ans&&!formula&&!state.attachments.length){$("notice").textContent="请至少填写文字、公式或上传一份附件。";return}const plain="学生文字答案："+(ans||"未填写")+"\\n公式/LaTeX："+(formula||"未填写")+"\\n附件文字内容："+state.attachments.filter(x=>x.text).map(x=>x.text).join("\\n");addMsg("student",plain+(state.attachments.length?"\\n附件："+state.attachments.map(x=>x.name).join("、"):""));setBusy(true);try{let final;if(true){const content=[{type:"text",text:"迁移题："+state.transfer+"\\n"+plain+"\\n此前诊断："+JSON.stringify(state.diagnosis)+"\\n请评价学生的概念理解、逻辑推理和迁移应用，各0-4分，解释评分依据，指出正确与待改进之处，并给出参考解答。"}];state.attachments.filter(x=>x.dataUrl).forEach(x=>content.push({type:"image_url",image_url:{url:x.dataUrl}}));final=await callAI([{role:"system",content:"你是高中"+state.subject+"教师。请根据题目和学生文字、公式及附件作答情况进行严谨评价。若图片内容无法辨认，请明确说明，不要猜测。"},{"role":"user",content}]);}else{final="你已提交独立迁移作答。当前未连接模型，系统不会自动识别图片或评分；你可以在课程展示时展示已上传的附件。请对照教材或教师提供的参考解答检查推理。";}addMsg("ai",final,"独立迁移反馈");if(!state.earnedTransfer){awardXP(30,"完成独立迁移");state.earnedTransfer=true;completeLearningDay();} $("reportArea").classList.remove("hidden");$("reportArea").innerHTML="<h3>本轮学习完成</h3><p>你经历了诊断性提问、错误识别、解释修正和独立迁移四个关键学习活动。</p><p style='margin-top:12px;white-space:pre-wrap'>"+escapeHtml(final)+"</p><button class='btn secondary' style='margin-top:12px' onclick='window.print()'>打印本轮记录</button>";setPhase(5);$("notice").textContent="本轮结束。建议回顾：哪些问题最有效？你最初是否也存在与同伴相似的理解偏差？";}catch(e){addMsg("ai","迁移评价失败："+e.message)}finally{setBusy(false)}}
+function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+const conceptsBySubject={"物理":["理想气体状态变化","牛顿第二定律与连接体","理想变压器"],"数学":["概率与统计","导数及其应用","椭圆与解析几何"]};
+function fillConcepts(){const subject=$("subject").value,el=$("concept");el.innerHTML="";(conceptsBySubject[subject]||[]).forEach(v=>{const o=document.createElement("option");o.value=v;o.textContent=v;el.appendChild(o)});state.subject=subject;state.concept=el.value;}
+$("subject").addEventListener("change",fillConcepts);fillConcepts();
+$("startBtn").addEventListener("click",start);$("sendBtn").addEventListener("click",send);$("submitDiagnosis").addEventListener("click",submitDiagnosis);$("submitTransfer").addEventListener("click",submitTransfer);$("transferFiles").addEventListener("change",async e=>{try{await readAttachments([...e.target.files]);$("notice").textContent="附件已添加。提交时将随答案一起发送。";}catch(err){$("notice").textContent="附件读取失败："+err.message;}});$("message").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send()}});$("apiKey").addEventListener("input",()=>{$("modePill").textContent=$("apiKey").value.trim()?"自定义 API":"内置 AI"});$("modelSelect").addEventListener("change",()=>{$("modelCustom").value="";$("apiHint").textContent="当前选择模型："+getModel();});$("loadModelsBtn").addEventListener("click",loadModels);$("testApiBtn").addEventListener("click",testApi);loadModels();
+const finish=document.createElement("button");finish.id="finishChatBtn";finish.className="btn secondary hidden";finish.textContent="我准备好诊断了";finish.addEventListener("click",()=>{setPhase(2);$("notice").textContent="请在下方写出你的诊断。AI 暂时不会替你公布正确答案。"});$("composerActions");document.querySelector(".composer-actions").appendChild(finish);
+</script>
+</body>
+</html>]],
+    displayMath: [['\\\\[', '\\\\]'], ['$', '$']],
+    processEscapes: true
+  },
+  options: {
+    skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  chtml: { scale: 1 }
+};
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>
 const $=id=>document.getElementById(id);
