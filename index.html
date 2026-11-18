@@ -12,7 +12,28 @@ header{background:#fff;border-bottom:1px solid var(--line);padding:16px max(22px
 .header-right{display:flex;align-items:center;gap:10px}.pill{font-size:12px;border:1px solid var(--line);border-radius:30px;padding:5px 10px;color:var(--muted);background:#fff}
 main{max-width:1120px;margin:30px auto;padding:0 20px 60px}.intro{display:flex;justify-content:space-between;align-items:end;gap:24px;margin-bottom:22px}.eyebrow{font-size:12px;letter-spacing:.12em;color:var(--blue);font-weight:700}.intro h1{font-size:29px;line-height:1.25;margin:5px 0 8px}.intro p{margin:0;color:var(--muted);max-width:700px}.layout{display:grid;grid-template-columns:265px minmax(0,1fr);gap:20px;align-items:start}
 .panel{background:var(--white);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow)}.side{padding:20px;position:sticky;top:18px}.side h3{font-size:14px;margin:0 0 14px}.steps{display:grid;gap:8px}.step{display:flex;gap:10px;align-items:center;padding:10px;border-radius:11px;color:var(--muted);font-size:13px}.step .num{width:25px;height:25px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;font-size:12px}.step.active{background:var(--blue2);color:var(--blue);font-weight:700}.step.active .num{background:var(--blue);color:white;border-color:var(--blue)}.step.done{color:var(--green)}.step.done .num{background:var(--green2);border-color:#cce9dc}
-.side hr{border:0;border-top:1px solid var(--line);margin:18px 0}.field{display:grid;gap:6px;margin-bottom:13px}.field label{font-size:12px;color:var(--muted);font-weight:650}input,select,textarea{font:inherit;color:var(--ink);border:1px solid #d9e1e9;border-radius:10px;padding:10px 12px;background:#fff;width:100%;outline:none}input:focus,select:focus,textarea:focus{border-color:#7b9cc8;box-shadow:0 0 0 3px #eaf1fb}textarea{resize:vertical;min-height:90px}.hint{font-size:11px;color:var(--muted)}.btn{border:0;border-radius:10px;padding:10px 15px;font:inherit;font-weight:650;cursor:pointer;transition:.15s}.btn:disabled{opacity:.45;cursor:not-allowed}.primary{background:var(--blue);color:#fff}.primary:hover{background:#254d82}.secondary{background:#eef2f6;color:#34465b}.ghost{background:transparent;border:1px solid var(--line);color:#526174}.full{width:100%}
+.side hr{border:0;border-top:1px solid var(--line);margin:18px 0}.field{display:grid;gap:6px;margin-bottom:13px}.field label{font-size:12px;color:var(--muted);font-weight:650}input,select,textarea{font:inherit;color:var(--ink);border:1px solid #d9e1e9;border-radius:10px;padding:10px 12px;background:#fff;width:100%;outline:none}input:focus,select:focus,textarea:focus{border-color:#7b9cc8;box-shadow:0 0 0 3px #eaf1fb}textarea{resize:vertical;min-height:90px}.hint{font-size:11px;color:var(--muted)}.btn{border:0;border-radius:10px;padding:10px 15px;font:inherit;font-weight:650;cursor:pointer;transition:.15s}.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn{transform:translateZ(0);transition:transform .16s cubic-bezier(.2,.8,.2,1),filter .16s,box-shadow .16s}
+.btn:active{transform:scale(.96);filter:brightness(.96)}
+.btn.tap-feedback{animation:buttonTap .28s ease}
+@keyframes buttonTap{0%{transform:scale(1)}38%{transform:scale(.955)}72%{transform:scale(1.025)}100%{transform:scale(1)}}
+.btn:focus-visible{outline:3px solid #b8cfee;outline-offset:3px}
+.onboarding{position:fixed;inset:0;z-index:10000;background:rgba(18,34,53,.62);display:grid;place-items:center;padding:20px;backdrop-filter:blur(5px)}
+.onboarding.hidden{display:none!important}
+.onboarding-card{width:min(680px,100%);background:#fff;border-radius:24px;padding:clamp(24px,5vw,42px);box-shadow:0 24px 80px rgba(0,0,0,.22);position:relative}
+.onboarding-kicker{font-size:12px;letter-spacing:.14em;color:var(--blue);font-weight:800}
+.onboarding-icon{width:64px;height:64px;border-radius:20px;background:#eaf1fb;display:grid;place-items:center;font-size:30px;margin:18px 0}
+.onboarding-card h1{font-size:clamp(24px,4vw,32px);line-height:1.25;margin:0 0 12px}
+.onboarding-card p{color:var(--muted);margin:0;line-height:1.85}
+.onboarding-points{display:grid;gap:10px;margin:22px 0}
+.onboarding-point{display:flex;gap:11px;align-items:flex-start;padding:11px 13px;border-radius:12px;background:#f5f8fc}
+.onboarding-point b{color:var(--blue);white-space:nowrap}
+.onboarding-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:26px}
+.onboarding-dots{display:flex;gap:6px}
+.onboarding-dots span{width:7px;height:7px;border-radius:50%;background:#dce4ed}
+.onboarding-dots span.active{width:20px;border-radius:8px;background:var(--blue)}
+.onboarding-actions{display:flex;gap:8px;align-items:center}
+@media(max-width:560px){.onboarding-card{padding:24px 20px}.onboarding-footer{align-items:flex-start;flex-direction:column}.onboarding-actions{width:100%}.onboarding-actions .btn{flex:1}}.primary{background:var(--blue);color:#fff}.primary:hover{background:#254d82}.secondary{background:#eef2f6;color:#34465b}.ghost{background:transparent;border:1px solid var(--line);color:#526174}.full{width:100%}
 .mainpanel{overflow:hidden}.topline{padding:17px 22px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:10px}.stage{font-weight:700}.stage-desc{font-size:12px;color:var(--muted)}.content{padding:24px}.welcome{padding:22px;border-radius:15px;background:linear-gradient(120deg,#f0f5fc,#fbfcfe);border:1px solid #e3ebf5;margin-bottom:18px}.welcome h2{margin:0 0 6px;font-size:19px}.welcome p{margin:0;color:var(--muted);font-size:13px}.chat{display:grid;gap:14px;max-height:430px;overflow:auto;padding:2px 4px 10px}.msg{display:flex;gap:10px;align-items:flex-start}.avatar{flex:0 0 32px;height:32px;border-radius:11px;background:#e8eef6;color:#38577e;display:grid;place-items:center;font-size:12px;font-weight:800}.msg.student{flex-direction:row-reverse}.msg.student .avatar{background:#e8f4ef;color:var(--green)}.bubble{max-width:min(88%,680px);padding:12px 15px;border:1px solid var(--line);border-radius:4px 14px 14px 14px;background:#fff;white-space:pre-wrap}.student .bubble{background:#eff6f2;border-color:#dcece4;border-radius:14px 4px 14px 14px}.bubble .who{font-size:11px;color:var(--muted);font-weight:700;margin-bottom:4px}.tag{display:inline-block;font-size:11px;padding:2px 8px;border-radius:20px;background:var(--orange2);color:var(--orange);margin-bottom:8px}
 .composer{border-top:1px solid var(--line);padding:17px 22px;background:#fcfdff}.composer textarea{min-height:76px}.composer-actions{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:9px}.composer-actions small{color:var(--muted);font-size:11px}
 .notice{padding:12px 14px;border-radius:11px;background:#f4f7fa;color:#566779;font-size:12px;margin-top:14px}.notice.warn{background:var(--orange2);color:#8c5428}.notice.good{background:var(--green2);color:#25664f}
@@ -36,9 +57,24 @@ footer{max-width:1120px;margin:0 auto;padding:0 20px 30px;color:#8a96a4;font-siz
 .message-content{overflow-wrap:anywhere;word-break:normal;line-height:1.8}.message-content mjx-container{max-width:100%;overflow-x:auto;overflow-y:hidden;padding:2px 0}.question-body mjx-container{max-width:100%;overflow-x:auto;overflow-y:hidden}</style>
 </head>
 <body>
+<section class="onboarding" id="onboarding" aria-modal="true" role="dialog" aria-labelledby="onboardingTitle">
+ <div class="onboarding-card">
+  <div class="onboarding-kicker" id="onboardingKicker">WELCOME · 01 / 04</div>
+  <div class="onboarding-icon" id="onboardingIcon">🧠</div>
+  <h1 id="onboardingTitle">欢迎来到装懂同伴</h1>
+  <p id="onboardingText">这里不是普通的答题网站。你要面对一位“看起来很懂、其实藏着推理漏洞”的同学，通过提问和判断，真正弄懂一个高中数学或物理概念。</p>
+  <div class="onboarding-points" id="onboardingPoints">
+   <div class="onboarding-point"><b>你的任务</b><span>不急着看答案，而是发现错误、修正解释。</span></div>
+  </div>
+  <div class="onboarding-footer">
+   <div class="onboarding-dots" id="onboardingDots"><span class="active"></span><span></span><span></span><span></span></div>
+   <div class="onboarding-actions"><button class="btn ghost" type="button" id="skipGuideBtn">跳过介绍</button><button class="btn primary" type="button" id="nextGuideBtn">下一步</button></div>
+  </div>
+ </div>
+</section>
 <header>
  <div class="brand"><div class="logo">知</div><div><strong>装懂同伴 Agent</strong><small>概念诊断实验室 · 高中数学与物理</small></div></div>
- <div class="header-right"><span class="pill">课程项目 Demo</span><span class="pill" id="modePill">体验模式</span></div>
+ <div class="header-right"><button class="btn ghost" type="button" id="openGuideBtn" style="padding:6px 11px;font-size:12px">使用说明</button><span class="pill">课程项目 Demo</span><span class="pill" id="modePill">体验模式</span></div>
 </header>
 <main>
  <section class="intro"><div><div class="eyebrow">THINK · QUESTION · REPAIR</div><h1>你来考考这个“懂了”的同学</h1><p>它会给出一个看似正确、实则藏有推理漏洞的解释。你的任务不是接受答案，而是通过追问发现问题、说明理由并修正解释。</p></div></section>
@@ -148,6 +184,31 @@ window.MathJax = {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>
 const $=id=>document.getElementById(id);
+// 新手引导：首次进入自动展示，也可通过右上角“使用说明”重新打开。
+const guidePages=[
+ {icon:"🧠",title:"欢迎来到装懂同伴",text:"这里不是普通的答题网站。你要面对一位“看起来很懂、其实藏着推理漏洞”的同学，通过提问和判断，真正弄懂一个高中数学或物理概念。",points:[["你的任务","不急着看答案，而是发现错误、修正解释。"],["适合谁","正在学习高中数学、物理，希望弄清概念而不只是背答案的你。"]]},
+ {icon:"🎯",title:"第一步：选择一个学习概念",text:"进入实验室后，先选择学科和概念，再点击“生成装懂同伴”。系统会呈现一道配套题目，并给出同伴看似合理的解题解释。",points:[["从熟悉的概念开始","建议先选你学过、但还不够确定的概念。"],["点击后会发生什么","题目和同伴的第一段解释会出现在右侧对话区。"]]},
+ {icon:"💬",title:"第二步：追问，找出推理漏洞",text:"像和同学讨论一样提出问题：它为什么这样判断？用了哪个条件？公式适用范围是什么？你可以连续追问，不必一开始就说出正确答案。",points:[["重点不是猜答案","要指出它推理中的具体问题，并用定义、定律或题目条件作为依据。"],["完成诊断","找到关键线索后，点击“我准备好诊断了”，完成三道选择题。"]]},
+ {icon:"🚀",title:"第三步：独立迁移，检验是否真正理解",text:"最后完成一道同一概念的真实试题，可以输入思路，也可以上传手写草稿。AI 会根据你的作答给出反馈。准备好后，就开始挑战吧！",points:[["独立完成","迁移阶段不提供提示，尽量先自己分析。"],["关于原题来源","来源链接是可选的。第三方网站偶尔无法访问，不会影响网页内的题目和作答。"]]}
+];
+let guideIndex=0;
+function renderGuide(){
+ const p=guidePages[guideIndex];$("onboardingIcon").textContent=p.icon;$("onboardingTitle").textContent=p.title;$("onboardingText").textContent=p.text;
+ $("onboardingKicker").textContent="WELCOME · 0"+(guideIndex+1)+" / 04";
+ $("onboardingPoints").innerHTML="";p.points.forEach(([a,b])=>{const row=document.createElement("div");row.className="onboarding-point";const strong=document.createElement("b");strong.textContent=a;const span=document.createElement("span");span.textContent=b;row.append(strong,span);$("onboardingPoints").appendChild(row)});
+ [...$("onboardingDots").children].forEach((d,i)=>d.classList.toggle("active",i===guideIndex));
+ $("nextGuideBtn").textContent=guideIndex===guidePages.length-1?"进入实验室":"下一步";
+ $("skipGuideBtn").textContent=guideIndex===guidePages.length-1?"稍后再看":"跳过介绍";
+}
+function closeGuide(){ $("onboarding").classList.add("hidden");try{localStorage.setItem("zhuangdong_intro_seen_v1","1")}catch(e){} }
+function openGuide(){guideIndex=0;renderGuide();$("onboarding").classList.remove("hidden")}
+$("nextGuideBtn").addEventListener("click",()=>{if(guideIndex<guidePages.length-1){guideIndex++;renderGuide()}else closeGuide()});
+$("skipGuideBtn").addEventListener("click",closeGuide);
+$("openGuideBtn").addEventListener("click",openGuide);
+renderGuide();
+try{if(localStorage.getItem("zhuangdong_intro_seen_v1")==="1")$("onboarding").classList.add("hidden")}catch(e){}
+// 所有按钮提供按压和回弹反馈；键盘触发也有一致的点击动画。
+document.addEventListener("click",e=>{const b=e.target.closest("button");if(!b||b.disabled)return;b.classList.remove("tap-feedback");void b.offsetWidth;b.classList.add("tap-feedback");setTimeout(()=>b.classList.remove("tap-feedback"),320)});
 // 默认使用腾讯云 CloudBase 内置 AI 服务；密钥仅保存在云端环境变量中。
 const DEFAULT_AI_ENDPOINT="https://zhuangdong-ai-d3gk1l1emc7a66729-1534497242.ap-shanghai.app.tcloudbase.com";
 const DEFAULT_AI_MODEL="deepseek-ai/DeepSeek-V3.2";
@@ -358,13 +419,10 @@ function pickQuestion(concept){const pool=questionPools[concept]||[examBank[conc
 function renderQuestion(containerId,q,mode="original"){
  const box=$(containerId);box.innerHTML=q.body;
  if(q.figure){
-  const frame=document.createElement("iframe");
-  frame.src=mode==="transfer"?(q.sourceUrl||q.url):(q.url+"#page="+(q.page||1)+"&toolbar=0&navpanes=0");
-  frame.title=q.title+"原题及配图";frame.loading="lazy";
-  frame.style.cssText="width:100%;height:520px;border:1px solid #dfe6ee;border-radius:10px;margin-top:14px;background:#f7f9fb";
-  box.appendChild(frame);
-  const note=document.createElement("div");note.className="hint";
-  note.textContent=mode==="transfer"?"上方为试题来源页面，包含原题配图；如页面未能内嵌显示，可使用上方可选来源链接。":"上方为原卷页面，包含题目原图；原卷链接仅供需要时查看。";
+  const note=document.createElement("div");note.className="notice";
+  note.textContent=mode==="transfer"
+   ?"本题配有原题图示。为避免第三方来源网站故障影响做题，题目区域不再嵌入外部网页；如需查看原始配图，请点击上方“需要核对时查看原题来源（可选）”在新窗口打开。"
+   :"本题配有原卷图示。原卷仅作为核对资料，不在学习页面中嵌入第三方页面；如需查看完整原卷，请使用上方可选链接。";
   box.appendChild(note);
  }
  if(window.MathJax?.typesetPromise)renderMessageMath(box);
@@ -372,7 +430,7 @@ function renderQuestion(containerId,q,mode="original"){
 function showOriginalQuestion(){
  const q=state.activeQuestion||examBank[state.concept];if(!q)return;
  $("originalQuestionCard").classList.remove("hidden");$("originalTitle").textContent=q.title;$("originalMeta").textContent=q.meta;
- $("originalLink").textContent="查看原卷 PDF";$("originalLink").href=q.url+"#page="+(q.page||1);
+ $("originalLink").textContent="需要时查看原卷 PDF（可选）";$("originalLink").href=q.url+"#page="+(q.page||1);
  $("questionSourceNote").textContent="本题来自真实试卷。题干在网页中呈现，原卷 PDF 可用于核对完整版式与原始配图。下方同伴分析为教学设计内容，不属于原卷内容。";
  renderQuestion("originalQuestionBody",q);
 }
