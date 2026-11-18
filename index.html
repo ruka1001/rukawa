@@ -73,9 +73,28 @@ footer{max-width:1120px;margin:0 auto;padding:0 20px 30px;color:#8a96a4;font-siz
 .badge-pop{display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border-radius:20px;background:#fff4df;color:#94611c;font-size:11px;font-weight:700}
 @media(max-width:600px){.rewardbar{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.rewardtile{padding:10px}.rewardtile strong{font-size:17px}.questline{align-items:flex-start;flex-direction:column}}
 
-.message-content{overflow-wrap:anywhere;word-break:normal;line-height:1.8}.message-content mjx-container{max-width:100%;overflow-x:auto;overflow-y:hidden;padding:2px 0}.question-body mjx-container{max-width:100%;overflow-x:auto;overflow-y:hidden}</style>
+.message-content{overflow-wrap:anywhere;word-break:normal;line-height:1.8}.message-content mjx-container{max-width:100%;overflow-x:auto;overflow-y:hidden;padding:2px 0}.question-body mjx-container{max-width:100%;overflow-x:auto;overflow-y:hidden}
+/* 昵称进入界面 */
+.entry-gate{position:fixed;inset:0;z-index:10002;background:rgba(18,34,53,.72);display:grid;place-items:center;padding:20px;backdrop-filter:blur(6px)}
+.entry-gate.hidden{display:none!important}.entry-card{width:min(460px,100%);background:#fff;border-radius:24px;padding:clamp(25px,5vw,38px);box-shadow:0 24px 80px rgba(0,0,0,.24)}
+.entry-card h1{font-size:27px;margin:0 0 9px;color:var(--ink)}.entry-card p{margin:0 0 23px;color:var(--muted);line-height:1.7}
+.entry-label{display:block;font-size:13px;font-weight:700;margin:0 0 8px}.entry-input{width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:12px;padding:13px 14px;font:inherit;font-size:16px;outline:none}.entry-input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(75,125,184,.12)}
+.entry-actions{display:flex;gap:9px;margin-top:12px}.entry-actions button{flex:1}.entry-enter{width:100%;margin-top:17px}.entry-error{min-height:18px;color:#bd4b4b;font-size:12px;margin-top:7px}
+</style>
 </head>
 <body>
+<section class="entry-gate" id="entryGate" aria-modal="true" role="dialog" aria-labelledby="entryTitle">
+ <div class="entry-card">
+  <div class="onboarding-kicker">WELCOME TO ZHUANGDONG</div>
+  <h1 id="entryTitle">先认识一下你</h1>
+  <p>给自己取一个昵称，开启你的学习之旅。</p>
+  <label class="entry-label" for="nicknameInput">你的昵称</label>
+  <input class="entry-input" id="nicknameInput" maxlength="16" placeholder="输入一个喜欢的昵称" autocomplete="nickname">
+  <div class="entry-actions"><button class="btn ghost" type="button" id="randomNicknameBtn">随机生成昵称</button></div>
+  <div class="entry-error" id="nicknameError"></div>
+  <button class="btn primary entry-enter" type="button" id="enterLearningBtn">进入学习</button>
+ </div>
+</section>
 <section class="onboarding" id="onboarding" aria-modal="true" role="dialog" aria-labelledby="onboardingTitle">
  <div class="onboarding-card">
   <div class="onboarding-kicker" id="onboardingKicker">WELCOME · 01 / 04</div>
@@ -93,7 +112,7 @@ footer{max-width:1120px;margin:0 auto;padding:0 20px 30px;color:#8a96a4;font-siz
 </section>
 <header>
  <div class="brand"><div class="logo">知</div><div><strong>装懂同伴 Agent</strong><small>概念诊断实验室 · 高中数学与物理</small></div></div>
- <div class="header-right"><button class="btn ghost" type="button" id="openGuideBtn" style="padding:6px 11px;font-size:12px">使用说明</button><span class="pill">课程项目 Demo</span><span class="pill" id="modePill">体验模式</span></div>
+ <div class="header-right"><button class="btn ghost" type="button" id="openGuideBtn" style="padding:6px 11px;font-size:12px">使用说明</button><span class="pill">课程项目 Demo</span><span class="pill" id="modePill">体验模式</span><span class="pill hidden" id="currentUserPill">👤 <span id="currentNickname"></span></span></div>
 </header>
 <main>
  <section class="intro"><div><div class="eyebrow">THINK · QUESTION · REPAIR</div><h1>你来考考这个“懂了”的同学</h1><p>它会给出一个看似正确、实则藏有推理漏洞的解释。你的任务不是接受答案，而是通过追问发现问题、说明理由并修正解释。</p></div></section>
@@ -243,7 +262,18 @@ document.addEventListener("click",e=>{const b=e.target.closest("button");if(!b||
 const DEFAULT_AI_ENDPOINT="https://zhuangdong-ai-d3gk1l1emc7a66729-1534497242.ap-shanghai.app.tcloudbase.com";
 const DEFAULT_AI_MODEL="deepseek-ai/DeepSeek-V3.2";
 let state={phase:0,subject:"物理",concept:"理想气体状态变化",level:"高中",history:[],turns:0,hints:0,diagnosis:null,initial:null,transfer:null,report:null,busy:false,attachments:[],activeQuestion:null,earnedDiagnosis:false,earnedTransfer:false};
-const progressKey="zhuangdong_progress_v1";
+const profileKey="zhuangdong_profile_v1";
+const nicknamePool=["好奇的星星","认真思考的猫","探索者007","银河漫游者","爱提问的小熊","不服输的兔子","知识捕手","奇思妙想家","追光少年","聪明的土豆","问题研究员","勇敢的探索者","会思考的鲸鱼","闪闪发光的脑袋","宇宙观察员"];
+let currentProfile=null;
+try{currentProfile=JSON.parse(localStorage.getItem(profileKey)||"null");}catch(e){}
+function randomNickname(){return nicknamePool[Math.floor(Math.random()*nicknamePool.length)];}
+function makeUserId(){if(window.crypto&&crypto.randomUUID)return crypto.randomUUID();return "u"+Date.now().toString(36)+Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2);}
+function enterWithNickname(){const input=$("nicknameInput"),nickname=input.value.trim();if(!nickname){$("nicknameError").textContent="请先输入昵称，或点击随机生成昵称。";input.focus();return;}if(nickname.length>16){$("nicknameError").textContent="昵称最多 16 个字符。";return;}
+ const isFirst=!currentProfile;currentProfile=currentProfile||{userId:makeUserId(),createdAt:new Date().toISOString()};currentProfile.nickname=nickname;try{localStorage.setItem(profileKey,JSON.stringify(currentProfile));if(isFirst){const old=localStorage.getItem("zhuangdong_progress_v1");if(old&&!localStorage.getItem("zhuangdong_progress_migrated_v1")){localStorage.setItem("zhuangdong_progress_"+currentProfile.userId,old);localStorage.setItem("zhuangdong_progress_migrated_v1","1");}}}catch(e){$("nicknameError").textContent="浏览器暂时无法保存昵称，请检查隐私或存储设置后重试。";return;}
+ $("entryGate").classList.add("hidden");$("currentNickname").textContent=nickname;$("currentUserPill").classList.remove("hidden");try{if(localStorage.getItem("zhuangdong_intro_seen_v1")==="1")$("onboarding").classList.add("hidden");else $("onboarding").classList.remove("hidden");}catch(e){$("onboarding").classList.remove("hidden");}}
+$("randomNicknameBtn").addEventListener("click",()=>{$("nicknameInput").value=randomNickname();$("nicknameError").textContent="";});$("enterLearningBtn").addEventListener("click",enterWithNickname);$("nicknameInput").addEventListener("keydown",e=>{if(e.key==="Enter")enterWithNickname();});
+if(currentProfile&&currentProfile.userId&&currentProfile.nickname){$("entryGate").classList.add("hidden");$("currentNickname").textContent=currentProfile.nickname;$("currentUserPill").classList.remove("hidden");}else{$("entryGate").classList.remove("hidden");$("onboarding").classList.add("hidden");$("nicknameInput").value=randomNickname();}
+const progressKey="zhuangdong_progress_"+(currentProfile?.userId||"guest");
 let progress=(()=>{try{return JSON.parse(localStorage.getItem(progressKey))||{xp:0,completed:0,streak:0,lastDay:""};}catch(e){return{xp:0,completed:0,streak:0,lastDay:""};}})();
 function saveProgress(){localStorage.setItem(progressKey,JSON.stringify(progress));renderProgress();}
 function renderProgress(){const xp=progress.xp||0;$("xpValue").textContent=xp;$("levelValue").textContent=Math.floor(xp/100)+1;$("xpFill").style.width=(xp%100)+"%";$("streakValue").textContent=progress.streak||0;$("completedValue").textContent=progress.completed||0;}
