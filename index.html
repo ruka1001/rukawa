@@ -693,11 +693,11 @@ $("voiceInputBtn").addEventListener("click",()=>{
  speechRecognition=new Speech();speechRecognition.lang="zh-CN";speechRecognition.continuous=true;speechRecognition.interimResults=true;
  const btn=$("voiceInputBtn"),ta=$("transferAnswer");let finalText="";
  btn.classList.add("recording");$("notice").textContent="正在聆听，再次点击麦克风即可结束。";
- speechRecognition.onresult=e=>{let interim="";for(let i=e.resultIndex;i<e.results.length;i++){const part=e.results[i][0].transcript;if(e.results[i].isFinal)finalText+=part;else interim+=part;}ta.value=ta.value.replace(/\\[语音识别中\\][\\s\\S]*$/,"");ta.value+=(ta.value&&!ta.value.endsWith("\\n")?"\\n":"")+(finalText+(interim?" [语音识别中] "+interim:""));};
+ speechRecognition.onresult=e=>{let interim="";for(let i=e.resultIndex;i<e.results.length;i++){const part=e.results[i][0].transcript;if(e.results[i].isFinal)finalText+=part;else interim+=part;}ta.value=ta.value.replace(/\[语音识别中\][\s\S]*$/,"");ta.value+=(ta.value&&!ta.value.endsWith("\n")?"\n":"")+(finalText+(interim?" [语音识别中] "+interim:""));};
  speechRecognition.onerror=e=>{$("notice").textContent="语音输入暂时中断："+e.error;};
  speechRecognition.onend=()=>{btn.classList.remove("recording");speechRecognition=null;$("notice").textContent="语音输入已结束，识别文字已放入答案框。";};
  speechRecognition.start();
-});$("message").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send()}});$("apiKey").addEventListener("input",()=>{$("modePill").textContent=$("apiKey").value.trim()?"自定义 API":"内置 AI"});$("modelSelect").addEventListener("change",()=>{$("modelCustom").value="";$("apiHint").textContent="当前选择模型："+getModel();});$("loadModelsBtn").addEventListener("click",loadModels);$("testApiBtn").addEventListener("click",testApi);loadModels();
+});$("message").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send()}});$("apiKey").addEventListener("input",()=>{$("modePill").textContent=$("apiKey").value.trim()?"自定义 API":"内置 AI"});$("modelSelect").addEventListener("change",()=>{$("apiHint").textContent="当前选择模型："+getModel();});$("loadModelsBtn").addEventListener("click",loadModels);$("testApiBtn").addEventListener("click",testApi);loadModels();
 const finish=document.createElement("button");finish.id="finishChatBtn";finish.className="btn secondary hidden";finish.textContent="我准备好诊断了";finish.addEventListener("click",async()=>{setPhase(2);await prepareDiagnosisQuiz();});$("composerActions");document.querySelector(".composer-actions").appendChild(finish);
 </script>
 </body>
