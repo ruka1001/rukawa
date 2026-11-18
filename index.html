@@ -74,6 +74,11 @@ footer{max-width:1120px;margin:0 auto;padding:0 20px 30px;color:#8a96a4;font-siz
 @media(max-width:600px){.rewardbar{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.rewardtile{padding:10px}.rewardtile strong{font-size:17px}.questline{align-items:flex-start;flex-direction:column}}
 
 .message-content{overflow-wrap:anywhere;word-break:normal;line-height:1.8}.message-content mjx-container{max-width:100%;overflow-x:auto;overflow-y:hidden;padding:2px 0}.question-body mjx-container{max-width:100%;overflow-x:auto;overflow-y:hidden}
+/* 个性化设置面板 */
+.settings-gate{position:fixed;inset:0;z-index:10003;background:rgba(18,34,53,.62);display:grid;place-items:center;padding:18px;backdrop-filter:blur(5px)}
+.settings-gate.hidden{display:none!important}.settings-card{width:min(520px,100%);max-height:90vh;overflow:auto;background:#fff;border-radius:22px;padding:25px;box-shadow:0 24px 80px rgba(0,0,0,.24)}
+.settings-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:19px}.settings-head h2{margin:0;font-size:22px}.settings-close{background:#f1f4f8;color:var(--ink);padding:7px 12px}
+.settings-group{padding:15px 0;border-top:1px solid var(--line)}.settings-group label{display:block;font-weight:700;font-size:14px;margin-bottom:10px}.settings-group select{max-width:100%}.settings-range{display:flex;align-items:center;gap:12px}.settings-range input{padding:0;accent-color:var(--blue)}.settings-range output{min-width:48px;font-weight:700;color:var(--blue);text-align:right}.color-options{display:flex;gap:11px;flex-wrap:wrap}.color-choice{width:35px;height:35px;border-radius:50%;border:3px solid #fff;outline:1px solid #d8e0e8;cursor:pointer}.color-choice[aria-pressed="true"]{outline:3px solid var(--ink)}.settings-footer{display:flex;justify-content:flex-end;gap:9px;margin-top:12px}
 /* 昵称进入界面 */
 .entry-gate{position:fixed;inset:0;z-index:10002;background:rgba(18,34,53,.72);display:grid;place-items:center;padding:20px;backdrop-filter:blur(6px)}
 .entry-gate.hidden{display:none!important}.entry-card{width:min(460px,100%);background:#fff;border-radius:24px;padding:clamp(25px,5vw,38px);box-shadow:0 24px 80px rgba(0,0,0,.24)}
@@ -83,6 +88,22 @@ footer{max-width:1120px;margin:0 auto;padding:0 20px 30px;color:#8a96a4;font-siz
 </style>
 </head>
 <body>
+<section class="settings-gate hidden" id="settingsGate" aria-modal="true" role="dialog" aria-labelledby="settingsTitle">
+ <div class="settings-card">
+  <div class="settings-head"><h2 id="settingsTitle">页面设置</h2><button class="btn settings-close" type="button" id="closeSettingsBtn">关闭</button></div>
+  <div class="settings-group"><label>主题颜色</label><div class="color-options" role="group" aria-label="选择主题颜色">
+   <button class="color-choice" type="button" data-theme="blue" aria-label="蓝色" aria-pressed="true" style="background:#315f9f"></button>
+   <button class="color-choice" type="button" data-theme="green" aria-label="绿色" aria-pressed="false" style="background:#28785f"></button>
+   <button class="color-choice" type="button" data-theme="purple" aria-label="紫色" aria-pressed="false" style="background:#7254a3"></button>
+   <button class="color-choice" type="button" data-theme="orange" aria-label="橙色" aria-pressed="false" style="background:#b96b2c"></button>
+   <button class="color-choice" type="button" data-theme="rose" aria-label="玫红色" aria-pressed="false" style="background:#b44e70"></button>
+  </div></div>
+  <div class="settings-group"><label for="fontSizeSetting">字体大小</label><div class="settings-range"><span>小</span><input id="fontSizeSetting" type="range" min="13" max="19" step="1" value="15"><span>大</span><output id="fontSizeValue">15 px</output></div></div>
+  <div class="settings-group"><label for="fontFamilySetting">字体样式</label><select id="fontFamilySetting"><option value="system">默认字体</option><option value="serif">宋体风格</option><option value="rounded">圆润字体</option></select></div>
+  <div class="settings-group"><label for="lineHeightSetting">文字行间距</label><select id="lineHeightSetting"><option value="1.5">紧凑</option><option value="1.65" selected>标准</option><option value="1.85">宽松</option></select></div>
+  <div class="settings-footer"><button class="btn ghost" type="button" id="resetSettingsBtn">恢复默认</button></div>
+ </div>
+</section>
 <section class="entry-gate" id="entryGate" aria-modal="true" role="dialog" aria-labelledby="entryTitle">
  <div class="entry-card">
   <div class="onboarding-kicker">WELCOME TO ZHUANGDONG</div>
@@ -112,7 +133,7 @@ footer{max-width:1120px;margin:0 auto;padding:0 20px 30px;color:#8a96a4;font-siz
 </section>
 <header>
  <div class="brand"><div class="logo">知</div><div><strong>装懂同伴 Agent</strong><small>概念诊断实验室 · 高中数学与物理</small></div></div>
- <div class="header-right"><button class="btn ghost" type="button" id="openGuideBtn" style="padding:6px 11px;font-size:12px">使用说明</button><span class="pill">课程项目 Demo</span><span class="pill" id="modePill">体验模式</span><span class="pill hidden" id="currentUserPill">👤 <span id="currentNickname"></span></span></div>
+ <div class="header-right"><button class="btn ghost" type="button" id="openSettingsBtn" style="padding:6px 11px;font-size:12px">设置</button><button class="btn ghost" type="button" id="openGuideBtn" style="padding:6px 11px;font-size:12px">使用说明</button><span class="pill">课程项目 Demo</span><span class="pill" id="modePill">体验模式</span><span class="pill hidden" id="currentUserPill">👤 <span id="currentNickname"></span></span></div>
 </header>
 <main>
  <section class="intro"><div><div class="eyebrow">THINK · QUESTION · REPAIR</div><h1>你来考考这个“懂了”的同学</h1><p>它会给出一个看似正确、实则藏有推理漏洞的解释。你的任务不是接受答案，而是通过追问发现问题、说明理由并修正解释。</p></div></section>
@@ -262,6 +283,12 @@ document.addEventListener("click",e=>{const b=e.target.closest("button");if(!b||
 const DEFAULT_AI_ENDPOINT="https://zhuangdong-ai-d3gk1l1emc7a66729-1534497242.ap-shanghai.app.tcloudbase.com";
 const DEFAULT_AI_MODEL="deepseek-ai/DeepSeek-V3.2";
 let state={phase:0,subject:"物理",concept:"理想气体状态变化",level:"高中",history:[],turns:0,hints:0,diagnosis:null,initial:null,transfer:null,report:null,busy:false,attachments:[],activeQuestion:null,earnedDiagnosis:false,earnedTransfer:false};
+const appearanceKey="zhuangdong_appearance_v1";
+const appearanceThemes={blue:["#315f9f","#eaf1fb"],green:["#28785f","#e9f6f0"],purple:["#7254a3","#f0ebf8"],orange:["#b96b2c","#fff3e8"],rose:["#b44e70","#fbeef2"]};
+function applyAppearance(persist=true){const a=appearance;const theme=appearanceThemes[a.theme]||appearanceThemes.blue;document.documentElement.style.setProperty("--blue",theme[0]);document.documentElement.style.setProperty("--blue2",theme[1]);document.body.style.fontSize=(a.fontSize||15)+"px";document.body.style.lineHeight=a.lineHeight||"1.65";document.body.style.fontFamily=a.fontFamily==="serif"?'Georgia,"Songti SC","SimSun",serif':a.fontFamily==="rounded"?' "Arial Rounded MT Bold","Microsoft YaHei",sans-serif':'-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif';$("fontSizeSetting").value=a.fontSize||15;$("fontSizeValue").textContent=(a.fontSize||15)+" px";$("fontFamilySetting").value=a.fontFamily||"system";$("lineHeightSetting").value=a.lineHeight||"1.65";document.querySelectorAll(".color-choice").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.theme===a.theme)));if(persist){try{localStorage.setItem(appearanceKey,JSON.stringify(appearance));}catch(e){}}}
+let appearance={theme:"blue",fontSize:15,fontFamily:"system",lineHeight:"1.65"};try{appearance={...appearance,...JSON.parse(localStorage.getItem(appearanceKey)||"{}")};}catch(e){}
+$("openSettingsBtn").addEventListener("click",()=>{$("settingsGate").classList.remove("hidden");});$("closeSettingsBtn").addEventListener("click",()=>$("settingsGate").classList.add("hidden"));
+document.querySelectorAll(".color-choice").forEach(b=>b.addEventListener("click",()=>{appearance.theme=b.dataset.theme;applyAppearance();}));$("fontSizeSetting").addEventListener("input",e=>{appearance.fontSize=Number(e.target.value);applyAppearance();});$("fontFamilySetting").addEventListener("change",e=>{appearance.fontFamily=e.target.value;applyAppearance();});$("lineHeightSetting").addEventListener("change",e=>{appearance.lineHeight=e.target.value;applyAppearance();});$("resetSettingsBtn").addEventListener("click",()=>{appearance={theme:"blue",fontSize:15,fontFamily:"system",lineHeight:"1.65"};applyAppearance();});applyAppearance(false);
 const profileKey="zhuangdong_profile_v1";
 const nicknamePool=["好奇的星星","认真思考的猫","探索者007","银河漫游者","爱提问的小熊","不服输的兔子","知识捕手","奇思妙想家","追光少年","聪明的土豆","问题研究员","勇敢的探索者","会思考的鲸鱼","闪闪发光的脑袋","宇宙观察员"];
 let currentProfile=null;
