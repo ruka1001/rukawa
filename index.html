@@ -37,7 +37,17 @@ main{max-width:1120px;margin:30px auto;padding:0 20px 60px}.intro{display:flex;j
 .mainpanel{overflow:hidden}.topline{padding:17px 22px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:10px}.stage{font-weight:700}.stage-desc{font-size:12px;color:var(--muted)}.content{padding:24px}.welcome{padding:22px;border-radius:15px;background:linear-gradient(120deg,#f0f5fc,#fbfcfe);border:1px solid #e3ebf5;margin-bottom:18px}.welcome h2{margin:0 0 6px;font-size:19px}.welcome p{margin:0;color:var(--muted);font-size:13px}.chat{display:grid;gap:14px;max-height:430px;overflow:auto;padding:2px 4px 10px}.msg{display:flex;gap:10px;align-items:flex-start}.avatar{flex:0 0 32px;height:32px;border-radius:11px;background:#e8eef6;color:#38577e;display:grid;place-items:center;font-size:12px;font-weight:800}.msg.student{flex-direction:row-reverse}.msg.student .avatar{background:#e8f4ef;color:var(--green)}.bubble{max-width:min(88%,680px);padding:12px 15px;border:1px solid var(--line);border-radius:4px 14px 14px 14px;background:#fff;white-space:pre-wrap}.student .bubble{background:#eff6f2;border-color:#dcece4;border-radius:14px 4px 14px 14px}.bubble .who{font-size:11px;color:var(--muted);font-weight:700;margin-bottom:4px}.tag{display:inline-block;font-size:11px;padding:2px 8px;border-radius:20px;background:var(--orange2);color:var(--orange);margin-bottom:8px}
 .composer{border-top:1px solid var(--line);padding:17px 22px;background:#fcfdff}.composer textarea{min-height:76px}.composer-actions{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:9px}.composer-actions small{color:var(--muted);font-size:11px}
 .notice{padding:12px 14px;border-radius:11px;background:#f4f7fa;color:#566779;font-size:12px;margin-top:14px}.notice.warn{background:var(--orange2);color:#8c5428}.notice.good{background:var(--green2);color:#25664f}
-.task-card{border:1px solid var(--line);border-radius:13px;padding:16px;margin:14px 0;background:#fff}.task-card h3{font-size:14px;margin:0 0 8px}.task-card p{margin:0}.quiz-question{padding:12px;border:1px solid #e5eaf0;border-radius:11px;margin:10px 0;background:#fbfcfe}.quiz-question h4{font-size:13px;margin:0 0 8px}.quiz-option{display:flex;align-items:flex-start;gap:9px;padding:8px 9px;border-radius:8px;cursor:pointer;font-size:13px}.quiz-option:hover{background:#eef4fb}.quiz-option input{width:auto;margin:4px 0 0;flex:0 0 auto}.rubric{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}.score{background:#f7f9fb;border-radius:10px;padding:12px}.score b{display:block;font-size:20px}.score span{font-size:11px;color:var(--muted)}
+.task-card{border:1px solid var(--line);border-radius:13px;padding:16px;margin:14px 0;background:#fff}.task-card h3{font-size:14px;margin:0 0 8px}.task-card p{margin:0}.diagnosis-progress{display:flex;align-items:center;gap:12px;padding:15px 16px;margin-top:14px;border:1px solid #d8e5f5;border-radius:12px;background:#f3f7fd;color:#345a87;font-size:13px;line-height:1.65}
+.diagnosis-progress.hidden{display:none!important}
+.diagnosis-progress .progress-spinner{width:23px;height:23px;flex:0 0 23px;border:3px solid #d6e3f3;border-top-color:#4778b5;border-radius:50%;animation:diagnosisSpin .8s linear infinite}
+@keyframes diagnosisSpin{to{transform:rotate(360deg)}}
+.diagnosis-result{border:1px solid #cfe0f3;background:#fff;border-radius:15px;padding:20px;margin:16px 0;box-shadow:0 8px 24px rgba(40,75,115,.07);scroll-margin-top:22px}
+.diagnosis-result h3{font-size:17px;margin:0 0 8px;color:#203b5b}
+.diagnosis-result .result-lead{font-size:13px;color:#60758d;margin-bottom:14px}
+.diagnosis-result .result-content{font-size:14px;line-height:1.9;color:#26384d;white-space:pre-wrap;overflow-wrap:anywhere}
+.diagnosis-result .result-next{margin-top:16px;padding:11px 13px;background:#f2f6fb;border-radius:10px;color:#48627e;font-size:12px;line-height:1.7}
+.diagnosis-result mjx-container{max-width:100%;overflow-x:auto;overflow-y:hidden}
+.quiz-question{padding:12px;border:1px solid #e5eaf0;border-radius:11px;margin:10px 0;background:#fbfcfe}.quiz-question h4{font-size:13px;margin:0 0 8px}.quiz-option{display:flex;align-items:flex-start;gap:9px;padding:8px 9px;border-radius:8px;cursor:pointer;font-size:13px}.quiz-option:hover{background:#eef4fb}.quiz-option input{width:auto;margin:4px 0 0;flex:0 0 auto}.rubric{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}.score{background:#f7f9fb;border-radius:10px;padding:12px}.score b{display:block;font-size:20px}.score span{font-size:11px;color:var(--muted)}
 .original-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}.original-head a{font-size:12px;color:var(--blue);white-space:nowrap}.original-head h3{margin:0 0 3px}.question-body{margin-top:14px;padding:18px 20px;border:1px solid #e5eaf0;border-radius:12px;background:#fff;color:#243448;line-height:1.9}.question-body p{margin:8px 0}.question-body .q-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 18px;margin:10px 0 14px}.question-body .q-part{margin:10px 0}.question-body table{width:100%;border-collapse:collapse;margin:10px 0;font-size:14px}.question-body th,.question-body td{border:1px solid #dfe6ee;padding:8px 10px;text-align:center}.question-body .formula{font-family:Georgia,"Times New Roman",serif;font-size:1.05em}.question-body .diagram{padding:12px;margin:12px 0;border:1px dashed #cbd6e2;border-radius:9px;background:#f8fafc;text-align:center}.question-body iframe{display:block;max-width:100%}.attachment-preview{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.attachment-item{font-size:11px;padding:6px 9px;border:1px solid var(--line);border-radius:8px;background:#f7f9fb;color:var(--muted)}.attachment-item img{display:block;max-width:130px;max-height:100px;object-fit:contain;margin-bottom:4px;border-radius:5px}.hidden{display:none!important}.loading{display:inline-flex;gap:8px;align-items:center;color:var(--muted);font-size:12px}.dot{width:6px;height:6px;border-radius:50%;background:#8ca4c2;animation:pulse 1s infinite alternate}@keyframes pulse{to{opacity:.25;transform:translateY(-3px)}}
 footer{max-width:1120px;margin:0 auto;padding:0 20px 30px;color:#8a96a4;font-size:11px}
 @media(max-width:800px){.layout{grid-template-columns:1fr}.side{position:static}.steps{grid-template-columns:repeat(5,minmax(0,1fr));gap:3px}.step{display:grid;justify-items:center;text-align:center;padding:7px 2px;font-size:10px}.step .num{margin:auto}.side hr,.side .config{display:none}.intro{display:block}.header-right .pill{display:none}.task-card iframe{height:420px}.original-head{display:block}.original-head a{display:inline-block;margin-top:6px}}
@@ -146,7 +156,9 @@ footer{max-width:1120px;margin:0 auto;padding:0 20px 30px;color:#8a96a4;font-siz
       <div id="diagnosisQuiz"><div class="loading"><span class="dot"></span>正在准备诊断选择题…</div></div>
       <div class="field" style="margin-top:12px"><label>补充说明（选填）</label><textarea id="diagnosisNote" rows="2" placeholder="如果有想补充的想法，可以简单写一句；不写也可以。"></textarea></div>
       <button class="btn primary" id="submitDiagnosis">提交我的判断</button>
+      <div id="diagnosisProgress" class="diagnosis-progress hidden" role="status" aria-live="polite"></div>
     </div>
+    <div id="diagnosisResult" class="diagnosis-result hidden" aria-live="polite"></div>
     <div id="transferArea" class="task-card hidden">
       <h3>独立迁移挑战</h3>
       <div class="hint" id="transferSource" style="margin-bottom:8px"></div><a id="transferLink" href="#" target="_blank" rel="noopener" style="font-size:12px;color:var(--blue)">需要核对时查看原题来源（可选）</a>
@@ -548,7 +560,34 @@ function pickTransferQuestion(){
  localStorage.setItem("lastTransfer_"+state.concept,q.title);
  return {...q,concept:state.concept};
 }
+function setDiagnosisProgress(mode,message){
+ const box=$("diagnosisProgress");
+ box.classList.remove("hidden");
+ if(mode==="loading"){
+  box.className="diagnosis-progress";
+  box.innerHTML='<span class="progress-spinner" aria-hidden="true"></span><span><strong>正在分析你的判断…</strong><br>AI 正在结合原题、同伴的推理和你的三项选择生成反馈。请稍候，不需要重复点击。</span>';
+  $("submitDiagnosis").disabled=true;
+  $("submitDiagnosis").textContent="正在诊断…";
+ }else{
+  box.className="diagnosis-progress";
+  box.textContent=message;
+  $("submitDiagnosis").disabled=false;
+  $("submitDiagnosis").textContent="重新提交诊断";
+ }
+}
+function showDiagnosisResult(feedback){
+ const card=$("diagnosisResult");
+ card.innerHTML="";
+ const title=document.createElement("h3");title.textContent="本轮诊断结果";
+ const lead=document.createElement("div");lead.className="result-lead";lead.textContent="AI 已结合你的选择、追问过程和原题内容完成分析。";
+ const content=document.createElement("div");content.className="result-content message-content";content.textContent=normalizeMathText(feedback);
+ const next=document.createElement("div");next.className="result-next";next.textContent="诊断已完成。下面将进入独立迁移挑战，请尝试把刚才厘清的概念应用到新的真实试题中。";
+ card.append(title,lead,content,next);
+ card.classList.remove("hidden");
+ renderMessageMath(content);
+}
 async function submitDiagnosis(){
+ if(state.diagnosisSubmitting)return;
  const answers=[];
  (state.diagnosisQuiz||[]).forEach((q,i)=>{
   const selected=document.querySelector('input[name="diagnosis_'+i+'"]:checked');
@@ -556,31 +595,49 @@ async function submitDiagnosis(){
  });
  if(answers.length!==3){$("notice").textContent="还有题目没有选择哦，三道都选完就可以提交啦。";return}
  const note=$("diagnosisNote").value.trim();state.diagnosis={answers,note};
- if(!state.earnedDiagnosis){awardXP(20,"完成漏洞诊断");state.earnedDiagnosis=true;}
- addMsg("student","我的诊断：\\n"+answers.map((a,i)=>(i+1)+". "+a.question+"\\n我的选择："+a.selected).join("\\n")+(note?"\\n补充："+note:""));
- setBusy(true);
+ state.diagnosisSubmitting=true;
+ $("diagnosisResult").classList.add("hidden");
+ setDiagnosisProgress("loading");
+ $("notice").textContent="正在分析你的诊断，请稍候…";
  try{
   const feedback=await callAI([
-   {role:"system",content:"你是一位严谨、鼓励性的高中"+state.subject+"教师。根据原题、同伴最初的错误分析、追问记录和用户选择，逐项评价错误识别、科学依据、正确解释。指出准确与需要修正之处，并说明理由。必须直接对用户说‘你’，例如‘你的判断’‘你的依据’，禁止使用‘学生的判断’‘学生的答案’等第三人称表述。不要夸大分数，也不要编造题目内容。只输出反馈。"},
-   {role:"user",content:"真实原题："+state.activeQuestion.title+"\\n来源："+state.activeQuestion.url+"\\n同伴最初分析："+state.initial+"\\n追问记录："+JSON.stringify(state.history)+"\\n你的三项选择："+JSON.stringify(state.diagnosis)}
+   {role:"system",content:"你是一位严谨、鼓励性的高中"+state.subject+"教师。根据原题、同伴最初的错误分析、追问记录和用户选择，逐项评价错误识别、科学依据、正确解释。指出准确与需要修正之处，并说明理由。必须直接对用户说‘你’，例如‘你的判断’‘你的依据’，禁止使用‘学生的判断’‘学生的答案’等第三人称表述。不要夸大分数，也不要编造题目内容。请使用清楚的小标题和分点，先给出整体判断，再逐项评价三道选择题，最后给出正确概念解释。只输出反馈。"},
+   {role:"user",content:"真实原题："+state.activeQuestion.title+"\n来源："+state.activeQuestion.url+"\n同伴最初分析："+state.initial+"\n追问记录："+JSON.stringify(state.history)+"\n你的三项选择："+JSON.stringify(state.diagnosis)}
   ]);
-  addMsg("ai",feedback,"诊断反馈");state.report=feedback;
+  state.report=feedback;
+  addMsg("student","我的诊断：\n"+answers.map((a,i)=>(i+1)+". "+a.question+"\n我的选择："+a.selected).join("\n")+(note?"\n补充："+note:""));
+  addMsg("ai",feedback,"诊断反馈");
+  showDiagnosisResult(feedback);
+  if(!state.earnedDiagnosis){awardXP(20,"完成漏洞诊断");state.earnedDiagnosis=true;}
   state.transfer=pickTransferQuestion();
   if(!state.transfer){
    $("transferArea").classList.add("hidden");
    setPhase(5);
    $("reportArea").classList.remove("hidden");
    $("reportArea").innerHTML="<h3>本轮诊断已完成</h3><p>你已经完成同伴错误诊断。这个概念目前还没有第二道经过核实的同概念真题，因此暂不拿其他概念的题目冒充迁移练习。题库补充后即可开放。</p>";
-   $("notice").textContent="本轮诊断已完成！这个概念的第二道真实迁移题还在补充中。我们不拿别的概念来凑数。";
-   return;
+   $("notice").textContent="本轮诊断已完成！这个概念的第二道真实迁移题还在补充中。";
+  }else{
+   $("transferSource").textContent=state.transfer.meta;
+   $("transferLink").href=state.transfer.sourceUrl||state.transfer.url;
+   renderQuestion("transferQuestion",state.transfer,"transfer");
+   setPhase(4);
+   $("notice").textContent="诊断反馈已生成。你可以先阅读上方的诊断结果，再继续完成独立迁移挑战。";
   }
-  $("transferSource").textContent=state.transfer.meta;
-  $("transferLink").href=state.transfer.sourceUrl||state.transfer.url;
-  renderQuestion("transferQuestion",state.transfer,"transfer");
-  setPhase(4);
-  $("notice").textContent="诊断反馈已生成。接下来是一道同学科真实试题，换个考点检验你的独立分析能力。";
- }catch(e){addMsg("ai","评价请求失败："+e.message+"。请重试提交。");}
- finally{setBusy(false)}
+  $("diagnosisProgress").classList.add("hidden");
+  requestAnimationFrame(()=>cardScrollToResult());
+ }catch(e){
+  setDiagnosisProgress("error","这次暂时没有成功生成诊断反馈："+e.message+"。你的选择已经保留，请点击“重新提交诊断”再试一次。");
+  $("notice").textContent="诊断暂时未完成，你可以重新提交，不需要重新选择答案。";
+ }finally{
+  state.diagnosisSubmitting=false;
+  if(!$("diagnosisProgress").classList.contains("hidden")&&$("submitDiagnosis").textContent==="正在诊断…"){
+   $("submitDiagnosis").disabled=false;$("submitDiagnosis").textContent="重新提交诊断";
+  }
+ }
+}
+function cardScrollToResult(){
+ const card=$("diagnosisResult");
+ if(card&&!card.classList.contains("hidden"))card.scrollIntoView({behavior:"smooth",block:"start"});
 }
 async function readAttachments(files){state.attachments=[];$("attachmentPreview").innerHTML="";for(const file of files){const item={name:file.name,type:file.type||"",text:"",dataUrl:null};if(file.type.startsWith("image/")){item.dataUrl=await new Promise((resolve,reject)=>{const fr=new FileReader();fr.onload=()=>resolve(fr.result);fr.onerror=reject;fr.readAsDataURL(file)});}else if(file.type==="application/pdf"||file.name.toLowerCase().endsWith(".pdf")){if(!window.pdfjsLib)throw new Error("PDF 解析组件未加载，请稍后重试，或将 PDF 转为图片上传。");const buf=await file.arrayBuffer();const pdf=await pdfjsLib.getDocument({data:buf}).promise;let pages=[];for(let p=1;p<=pdf.numPages;p++){const page=await pdf.getPage(p);const tc=await page.getTextContent();pages.push(tc.items.map(x=>x.str).join(" "));}item.text="[PDF附件："+file.name+"]\\n"+pages.join("\\n");}else{item.text="[文本附件："+file.name+"]\\n"+await file.text();}state.attachments.push(item);const div=document.createElement("div");div.className="attachment-item";if(item.dataUrl){const img=document.createElement("img");img.src=item.dataUrl;div.appendChild(img)}const label=document.createElement("span");label.textContent=file.name+" · "+(item.dataUrl?"图片":item.text.length+"字已读取");div.appendChild(label);$("attachmentPreview").appendChild(div);}}
 async function submitTransfer(){
