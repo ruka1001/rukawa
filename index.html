@@ -526,6 +526,12 @@ function fallbackDiagnosisQuiz(){
  ];
 }
 function renderDiagnosisQuiz(questions){
+ // 精简诊断区：移除标题下方重复解释玩法的说明文字，只保留标题和题目。
+ const diagnosisArea=$("diagnosisArea");
+ diagnosisArea.querySelectorAll("p,.hint,.subheading,.description").forEach(el=>{
+  const text=(el.textContent||"").trim();
+  if(/不用写长篇解释|选出最符合你判断的答案|题目会根据本轮对话生成/.test(text))el.remove();
+ });
  const root=$("diagnosisQuiz");root.innerHTML="";
  questions.forEach((q,i)=>{
   const section=document.createElement("section");section.className="quiz-question";
