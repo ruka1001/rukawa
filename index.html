@@ -48,7 +48,16 @@ main{max-width:1120px;margin:30px auto;padding:0 20px 60px}.intro{display:flex;j
 .diagnosis-result .result-next{margin-top:16px;padding:11px 13px;background:#f2f6fb;border-radius:10px;color:#48627e;font-size:12px;line-height:1.7}
 .diagnosis-result mjx-container{max-width:100%;overflow-x:auto;overflow-y:hidden}
 .quiz-question{padding:12px;border:1px solid #e5eaf0;border-radius:11px;margin:10px 0;background:#fbfcfe}.quiz-question h4{font-size:13px;margin:0 0 8px}.quiz-option{display:flex;align-items:flex-start;gap:9px;padding:8px 9px;border-radius:8px;cursor:pointer;font-size:13px}.quiz-option:hover{background:#eef4fb}.quiz-option input{width:auto;margin:4px 0 0;flex:0 0 auto}.rubric{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}.score{background:#f7f9fb;border-radius:10px;padding:12px}.score b{display:block;font-size:20px}.score span{font-size:11px;color:var(--muted)}
-.original-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}.original-head a{font-size:12px;color:var(--blue);white-space:nowrap}.original-head h3{margin:0 0 3px}.question-body{margin-top:14px;padding:18px 20px;border:1px solid #e5eaf0;border-radius:12px;background:#fff;color:#243448;line-height:1.9}.question-body p{margin:8px 0}.question-body .q-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 18px;margin:10px 0 14px}.question-body .q-part{margin:10px 0}.question-body table{width:100%;border-collapse:collapse;margin:10px 0;font-size:14px}.question-body th,.question-body td{border:1px solid #dfe6ee;padding:8px 10px;text-align:center}.question-body .formula{font-family:Georgia,"Times New Roman",serif;font-size:1.05em}.question-body .diagram{padding:12px;margin:12px 0;border:1px dashed #cbd6e2;border-radius:9px;background:#f8fafc;text-align:center}.question-body iframe{display:block;max-width:100%}.attachment-preview{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.attachment-item{font-size:11px;padding:6px 9px;border:1px solid var(--line);border-radius:8px;background:#f7f9fb;color:var(--muted)}.attachment-item img{display:block;max-width:130px;max-height:100px;object-fit:contain;margin-bottom:4px;border-radius:5px}.hidden{display:none!important}.loading{display:inline-flex;gap:8px;align-items:center;color:var(--muted);font-size:12px}.dot{width:6px;height:6px;border-radius:50%;background:#8ca4c2;animation:pulse 1s infinite alternate}@keyframes pulse{to{opacity:.25;transform:translateY(-3px)}}
+.original-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}.original-head a{font-size:12px;color:var(--blue);white-space:nowrap}.original-head h3{margin:0 0 3px}.question-body{margin-top:14px;padding:18px 20px;border:1px solid #e5eaf0;border-radius:12px;background:#fff;color:#243448;line-height:1.9}.question-body p{margin:8px 0}.question-body .q-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 18px;margin:10px 0 14px}.question-body .q-part{margin:10px 0}.question-body table{width:100%;border-collapse:collapse;margin:10px 0;font-size:14px}.question-body th,.question-body td{border:1px solid #dfe6ee;padding:8px 10px;text-align:center}.question-body .formula{font-family:Georgia,"Times New Roman",serif;font-size:1.05em}.question-body .diagram{padding:12px;margin:12px 0;border:1px dashed #cbd6e2;border-radius:9px;background:#f8fafc;text-align:center}.question-body iframe{display:block;max-width:100%}.transfer-answer-field{position:relative}
+.transfer-answer-field textarea{width:100%;min-height:150px;padding:14px 14px 58px;resize:vertical}
+.answer-tools{position:absolute;right:12px;bottom:16px;display:flex;align-items:center;gap:5px}
+.answer-tool{width:34px;height:34px;border:0;border-radius:9px;background:#f0f4f8;color:#60758d;display:grid;place-items:center;cursor:pointer;transition:background .15s,color .15s,transform .15s}
+.answer-tool:hover{background:#e3edf8;color:#315f98;transform:translateY(-1px)}
+.answer-tool:active{transform:scale(.93)}
+.answer-tool svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.answer-tool.recording{background:#fff0f0;color:#d34b4b;animation:recordPulse 1s infinite alternate}
+@keyframes recordPulse{to{box-shadow:0 0 0 5px rgba(211,75,75,.12)}}
+.attachment-preview{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.attachment-item{font-size:11px;padding:6px 9px;border:1px solid var(--line);border-radius:8px;background:#f7f9fb;color:var(--muted)}.attachment-item img{display:block;max-width:130px;max-height:100px;object-fit:contain;margin-bottom:4px;border-radius:5px}.hidden{display:none!important}.loading{display:inline-flex;gap:8px;align-items:center;color:var(--muted);font-size:12px}.dot{width:6px;height:6px;border-radius:50%;background:#8ca4c2;animation:pulse 1s infinite alternate}@keyframes pulse{to{opacity:.25;transform:translateY(-3px)}}
 footer{max-width:1120px;margin:0 auto;padding:0 20px 30px;color:#8a96a4;font-size:11px}
 @media(max-width:800px){.layout{grid-template-columns:1fr}.side{position:static}.steps{grid-template-columns:repeat(5,minmax(0,1fr));gap:3px}.step{display:grid;justify-items:center;text-align:center;padding:7px 2px;font-size:10px}.step .num{margin:auto}.side hr,.side .config{display:none}.intro{display:block}.header-right .pill{display:none}.task-card iframe{height:420px}.original-head{display:block}.original-head a{display:inline-block;margin-top:6px}}
 
@@ -129,7 +138,7 @@ footer{max-width:1120px;margin:0 auto;padding:0 20px 30px;color:#8a96a4;font-siz
        <option value="Qwen/Qwen2.5-VL-32B-Instruct">Qwen2.5-VL-32B-Instruct（视觉）</option>
       </optgroup>
      </select></div>
-    <div class="field"><label>自定义模型 ID（可选）</label><input id="modelCustom" placeholder="粘贴硅基流动模型列表中的完整 ID"/></div>
+    
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px"><button class="btn secondary" type="button" id="loadModelsBtn">刷新可用模型</button><button class="btn ghost" type="button" id="testApiBtn">测试当前模型</button></div>
     <div class="hint" id="apiHint">已内置腾讯云 AI 服务，无需填写 API Key。网页会自动获取硅基流动账户可用的对话模型；模型可用性及费用以账户权限为准。</div>
     <details style="margin-top:10px"><summary style="cursor:pointer;color:var(--muted);font-size:12px">高级设置：使用自己的 API Key（可选）</summary>
@@ -160,11 +169,21 @@ footer{max-width:1120px;margin:0 auto;padding:0 20px 30px;color:#8a96a4;font-siz
     <div id="diagnosisResult" class="diagnosis-result hidden" aria-live="polite"></div>
     <div id="transferArea" class="task-card hidden">
       <h3>独立迁移挑战</h3>
-      <div class="hint" id="transferSource" style="margin-bottom:8px"></div><a id="transferLink" href="#" target="_blank" rel="noopener" style="font-size:12px;color:var(--blue)">需要核对时查看原题来源（可选）</a>
-      <p class="hint" style="margin:8px 0">本题与刚才学习的概念相同。原题来源仅供需要核对时查看，不会自动要求下载或另存原卷。</p>
+      <div class="hint" id="transferSource" style="margin-bottom:8px"></div><a id="transferLink" href="#" target="_blank" rel="noopener" style="font-size:12px;color:var(--blue)">查看原题来源</a>
+      
       <div id="transferQuestion" class="question-body"></div>
-      <div class="field" style="margin-top:12px"><label>写下你的思路或答案</label><textarea id="transferAnswer" placeholder="可以用普通文字写思路和计算过程，不需要输入 LaTeX 公式。"></textarea></div>
-      <div class="field"><label>上传手写过程或草稿（选填）</label><input id="transferFiles" type="file" accept="image/*,.pdf,.txt,.md" multiple/><div class="hint">也可以拍照上传手写解题过程；公式不用专门转换成 LaTeX。</div><div id="attachmentPreview" class="attachment-preview"></div></div>
+      <div class="field transfer-answer-field" style="margin-top:12px"><label>你的思路或答案</label>
+       <textarea id="transferAnswer" placeholder="在这里输入文字，或使用右下角工具添加语音、图片、文件和链接。"></textarea>
+       <div class="answer-tools">
+        <button class="answer-tool" type="button" id="voiceInputBtn" title="语音输入" aria-label="语音输入"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="2.5" width="6" height="12" rx="3"></rect><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3.5M8.5 21.5h7"></path></svg></button>
+        <button class="answer-tool" type="button" id="imageInputBtn" title="添加图片" aria-label="添加图片"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"></rect><circle cx="8.5" cy="9" r="1.5"></circle><path d="m21 15-5-5L5 20"></path></svg></button>
+        <button class="answer-tool" type="button" id="fileInputBtn" title="添加文件" aria-label="添加文件"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6M8 13h8M8 17h8"></path></svg></button>
+        <button class="answer-tool" type="button" id="linkInputBtn" title="添加链接" aria-label="添加链接"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.1 0l3-3A5 5 0 0 0 13 2.9l-1.7 1.7"></path><path d="M14 11a5 5 0 0 0-7.1 0l-3 3A5 5 0 0 0 11 21.1l1.7-1.7"></path></svg></button>
+       </div>
+       <input id="transferImageInput" type="file" accept="image/*" multiple hidden>
+       <input id="transferFileInput" type="file" accept=".pdf,.txt,.md,.doc,.docx,.ppt,.pptx,.xls,.xlsx,image/*" multiple hidden>
+       <div id="attachmentPreview" class="attachment-preview"></div>
+      </div>
       <button class="btn primary" id="submitTransfer">提交独立答案</button>
     </div>
     <div id="reportArea" class="task-card hidden"></div>
@@ -232,7 +251,7 @@ function awardXP(amount,reason){progress.xp=(progress.xp||0)+amount;saveProgress
 function completeLearningDay(){const today=new Date().toISOString().slice(0,10);if(progress.lastDay!==today){const yesterday=new Date(Date.now()-86400000).toISOString().slice(0,10);progress.streak=progress.lastDay===yesterday?(progress.streak||0)+1:1;progress.lastDay=today;}progress.completed=(progress.completed||0)+1;saveProgress();}
 renderProgress();
 function getApiBase(){return $("apiBase").value.trim().replace(new RegExp("/+$"),"");}
-function getModel(){return $("modelCustom").value.trim()||$("modelSelect").value.trim()||DEFAULT_AI_MODEL;}
+function getModel(){return $("modelSelect").value.trim()||DEFAULT_AI_MODEL;}
 async function loadModels(){
  const btn=$("loadModelsBtn");btn.disabled=true;btn.textContent="正在获取…";
  try{
@@ -245,14 +264,14 @@ async function loadModels(){
   const data=await res.json();
   const models=(data.data||data.models||[]).map(x=>typeof x==="string"?x:x.id||x.name).filter(id=>id&&!/(embedding|rerank|text-to-image|image-generation|stable-diffusion|whisper|speech|audio|music|video-generation|\\btts\\b|\\basr\\b)/i.test(id));
   if(!models.length)throw new Error("服务商没有返回可识别的模型列表。");
-  const select=$("modelSelect"),previous=getModel(),custom=$("modelCustom");
+  const select=$("modelSelect"),previous=getModel();
   const groups={};
   models.forEach(id=>{const group=id.startsWith("Pro/")?"Pro":id.startsWith("Qwen/")?"Qwen":id.toLowerCase().includes("kimi")?"Kimi":id.toLowerCase().includes("deepseek")?"DeepSeek":"其他";(groups[group]||(groups[group]=[])).push(id)});
   select.innerHTML="";
   Object.entries(groups).forEach(([name,ids])=>{const og=document.createElement("optgroup");og.label=name;ids.forEach(id=>{const o=document.createElement("option");o.value=id;o.textContent=id;og.appendChild(o)});select.appendChild(og)});
-  if(models.includes(previous)){select.value=previous;custom.value="";}else if(previous&&!models.includes(previous)){custom.value=previous;}
+  if(models.includes(previous)){select.value=previous;}else{select.value=models.includes(DEFAULT_AI_MODEL)?DEFAULT_AI_MODEL:models[0];}
   $("apiHint").textContent="已从硅基流动账户获取 "+models.length+" 个模型。当前列表仅显示账户可调用的模型。";
- }catch(e){$("apiHint").textContent=e.message+"。你仍可从预置列表选择，或手动填写模型 ID。"}
+ }catch(e){$("apiHint").textContent=e.message+"。你仍可使用当前已选模型。"}
  finally{btn.disabled=false;btn.textContent="刷新可用模型";}
 }
 async function testApi(){try{const answer=await callAI([{role:"user",content:"请只回复：API连接成功"}],0);$("apiHint").textContent="当前模型连接成功："+getModel()+"；回复："+answer.slice(0,100);}catch(e){$("apiHint").textContent="当前模型连接失败："+e.message;}}
@@ -375,7 +394,7 @@ const transferBank={
  sourceUrl:"https://zy.21cnjy.com/23246051",
  url:"https://zy.21cnjy.com/23246051",
  page:1,figure:true,
- body:`<p>图甲为伽利略发明的温度计原理示意图。硬质玻璃泡 a 内封有一定质量的气体（视为理想气体），与 a 相连的 b 管插在水槽中固定，b 管中液面高度会随环境温度变化而变化。设 b 管的体积与 a 泡的体积相比可忽略不计，在标准大气压下，b 管上的刻度可以直接读出环境温度。下列说法正确的是（　　）</p><div class="q-options"><div>A．环境温度升高时，b 管中液面升高</div><div>B．环境温度降低时，b 管中液面升高</div><div>C．水槽中的水少量蒸发后，温度测量值偏小</div><div>D．水槽中的水少量蒸发后，温度测量值偏大</div></div><p class="hint">原题配有温度计结构示意图，请查看上方原题来源页面。</p>`,
+ body:`<p>图甲为伽利略发明的温度计原理示意图。硬质玻璃泡 a 内封有一定质量的气体（视为理想气体），与 a 相连的 b 管插在水槽中固定，b 管中液面高度会随环境温度变化而变化。设 b 管的体积与 a 泡的体积相比可忽略不计，在标准大气压下，b 管上的刻度可以直接读出环境温度。下列说法正确的是（　　）</p><div class="q-options"><div>A．环境温度升高时，b 管中液面升高</div><div>B．环境温度降低时，b 管中液面升高</div><div>C．水槽中的水少量蒸发后，温度测量值偏小</div><div>D．水槽中的水少量蒸发后，温度测量值偏大</div></div>`,
  analysis:""
 }],
 "牛顿第二定律与连接体":[{
@@ -384,7 +403,7 @@ const transferBank={
  sourceUrl:"https://zy.21cnjy.com/23355441",
  url:"https://zy.21cnjy.com/23355441",
  page:1,figure:true,
- body:`<p>如图所示，弹簧一端固定，另一端与光滑水平面上的木箱相连，箱内放置一小物块，物块与木箱之间有摩擦。压缩弹簧并由静止释放，释放后物块在木箱上有滑动，滑动过程中不与木箱前后壁发生碰撞，不计空气阻力，则（　　）</p><div class="q-options"><div>A．释放瞬间，物块加速度为零</div><div>B．物块和木箱最终仍有相对运动</div><div>C．木箱第一次到达最右端时，物块速度为零</div><div>D．物块和木箱的速度第一次相同前，物块受到的摩擦力不变</div></div><p class="hint">原题配有木箱、弹簧和物块示意图，请查看上方原题来源页面。</p>`,
+ body:`<p>如图所示，弹簧一端固定，另一端与光滑水平面上的木箱相连，箱内放置一小物块，物块与木箱之间有摩擦。压缩弹簧并由静止释放，释放后物块在木箱上有滑动，滑动过程中不与木箱前后壁发生碰撞，不计空气阻力，则（　　）</p><div class="q-options"><div>A．释放瞬间，物块加速度为零</div><div>B．物块和木箱最终仍有相对运动</div><div>C．木箱第一次到达最右端时，物块速度为零</div><div>D．物块和木箱的速度第一次相同前，物块受到的摩擦力不变</div></div>`,
  analysis:""
 }],
 "理想变压器":[{
@@ -429,13 +448,6 @@ function pickQuestion(concept){const pool=questionPools[concept]||[examBank[conc
 
 function renderQuestion(containerId,q,mode="original"){
  const box=$(containerId);box.innerHTML=q.body;
- if(q.figure){
-  const note=document.createElement("div");note.className="notice";
-  note.textContent=mode==="transfer"
-   ?"本题配有原题图示。为避免第三方来源网站故障影响做题，题目区域不再嵌入外部网页；如需查看原始配图，请点击上方“需要核对时查看原题来源（可选）”在新窗口打开。"
-   :"本题配有原卷图示。原卷仅作为核对资料，不在学习页面中嵌入第三方页面；如需查看完整原卷，请使用上方可选链接。";
-  box.appendChild(note);
- }
  if(window.MathJax?.typesetPromise)renderMessageMath(box);
 }
 function showOriginalQuestion(){
@@ -445,7 +457,7 @@ function showOriginalQuestion(){
  $("questionSourceNote").textContent="本题来自真实试卷。题干在网页中呈现，原卷 PDF 可用于核对完整版式与原始配图。下方同伴分析为教学设计内容，不属于原卷内容。";
  renderQuestion("originalQuestionBody",q);
 }
-async function start(){state.subject=$("subject").value;state.concept=$("concept").value;state.history=[];state.turns=0;state.hints=0;state.initial=null;state.diagnosis=null;state.diagnosisQuiz=null;state.aiCorrected=false;state.report=null;state.attachments=[];state.earnedDiagnosis=false;state.earnedTransfer=false;state.activeQuestion=pickQuestion(state.concept);$("chat").innerHTML="";$("welcome").classList.add("hidden");$("reportArea").classList.add("hidden");$("transferArea").classList.add("hidden");$("diagnosisArea").classList.add("hidden");$("diagnosisNote").value="";$("transferAnswer").value="";$("transferFiles").value="";$("attachmentPreview").innerHTML="";showOriginalQuestion();setPhase(1);addMsg("student",`我想考考你：${state.concept}。请你结合上方题目，解释你的解题思路。`);setBusy(true);
+async function start(){state.subject=$("subject").value;state.concept=$("concept").value;state.history=[];state.turns=0;state.hints=0;state.initial=null;state.diagnosis=null;state.diagnosisQuiz=null;state.aiCorrected=false;state.report=null;state.attachments=[];state.earnedDiagnosis=false;state.earnedTransfer=false;state.activeQuestion=pickQuestion(state.concept);$("chat").innerHTML="";$("welcome").classList.add("hidden");$("reportArea").classList.add("hidden");$("transferArea").classList.add("hidden");$("diagnosisArea").classList.add("hidden");$("diagnosisNote").value="";$("transferAnswer").value="";$("transferImageInput").value="";$("transferFileInput").value="";$("attachmentPreview").innerHTML="";showOriginalQuestion();setPhase(1);addMsg("student",`我想考考你：${state.concept}。请你结合上方题目，解释你的解题思路。`);setBusy(true);
 try{const first=state.activeQuestion.analysis;state.initial=first;state.history=[{role:"assistant",content:first}];addMsg("ai",first,"同伴对本轮题目的分析");$("notice").textContent="题目已载入。当前选择模型："+getModel()+"。请结合上方题目，追问同伴分析中的依据与逻辑。";}catch(e){addMsg("ai","载入题目时遇到问题："+e.message);setPhase(0)}finally{setBusy(false)}}
 async function send(){
  const msg=$("message").value.trim();if(!msg||state.phase!==1||state.busy)return;
@@ -644,7 +656,7 @@ function cardScrollToResult(){
  const card=$("diagnosisResult");
  if(card&&!card.classList.contains("hidden"))card.scrollIntoView({behavior:"smooth",block:"start"});
 }
-async function readAttachments(files){state.attachments=[];$("attachmentPreview").innerHTML="";for(const file of files){const item={name:file.name,type:file.type||"",text:"",dataUrl:null};if(file.type.startsWith("image/")){item.dataUrl=await new Promise((resolve,reject)=>{const fr=new FileReader();fr.onload=()=>resolve(fr.result);fr.onerror=reject;fr.readAsDataURL(file)});}else if(file.type==="application/pdf"||file.name.toLowerCase().endsWith(".pdf")){if(!window.pdfjsLib)throw new Error("PDF 解析组件未加载，请稍后重试，或将 PDF 转为图片上传。");const buf=await file.arrayBuffer();const pdf=await pdfjsLib.getDocument({data:buf}).promise;let pages=[];for(let p=1;p<=pdf.numPages;p++){const page=await pdf.getPage(p);const tc=await page.getTextContent();pages.push(tc.items.map(x=>x.str).join(" "));}item.text="[PDF附件："+file.name+"]\\n"+pages.join("\\n");}else{item.text="[文本附件："+file.name+"]\\n"+await file.text();}state.attachments.push(item);const div=document.createElement("div");div.className="attachment-item";if(item.dataUrl){const img=document.createElement("img");img.src=item.dataUrl;div.appendChild(img)}const label=document.createElement("span");label.textContent=file.name+" · "+(item.dataUrl?"图片":item.text.length+"字已读取");div.appendChild(label);$("attachmentPreview").appendChild(div);}}
+async function readAttachments(files){state.attachments=state.attachments||[];for(const file of files){const item={name:file.name,type:file.type||"",text:"",dataUrl:null};if(file.type.startsWith("image/")){item.dataUrl=await new Promise((resolve,reject)=>{const fr=new FileReader();fr.onload=()=>resolve(fr.result);fr.onerror=reject;fr.readAsDataURL(file)});}else if(file.type==="application/pdf"||file.name.toLowerCase().endsWith(".pdf")){if(!window.pdfjsLib)throw new Error("PDF 解析组件未加载，请稍后重试，或将 PDF 转为图片上传。");const buf=await file.arrayBuffer();const pdf=await pdfjsLib.getDocument({data:buf}).promise;let pages=[];for(let p=1;p<=pdf.numPages;p++){const page=await pdf.getPage(p);const tc=await page.getTextContent();pages.push(tc.items.map(x=>x.str).join(" "));}item.text="[PDF附件："+file.name+"]\\n"+pages.join("\\n");}else if(file.type.startsWith("text/")||file.name.endsWith(".txt")||file.name.endsWith(".md")||file.name.endsWith(".csv")){item.text="[文本附件："+file.name+"]\\n"+await file.text();}else{item.text="[已添加文件："+file.name+"；文件类型："+(file.type||"未知")+"。请结合用户提供的附件信息评价，不要假设已读取文件内容。]";}state.attachments.push(item);const div=document.createElement("div");div.className="attachment-item";if(item.dataUrl){const img=document.createElement("img");img.src=item.dataUrl;div.appendChild(img)}const label=document.createElement("span");label.textContent=file.name+" · "+(item.dataUrl?"图片":item.text.length+"字已读取");div.appendChild(label);$("attachmentPreview").appendChild(div);}}
 async function submitTransfer(){
  const ans=$("transferAnswer").value.trim();
  if(!ans&&!state.attachments.length){$("notice").textContent="请写下一点解题思路，或上传手写草稿后再提交。";return}
@@ -667,7 +679,25 @@ function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;","
 const conceptsBySubject={"物理":["理想气体状态变化","牛顿第二定律与连接体","理想变压器"],"数学":["概率与统计","导数及其应用","椭圆与解析几何"]};
 function fillConcepts(){const subject=$("subject").value,el=$("concept");el.innerHTML="";(conceptsBySubject[subject]||[]).forEach(v=>{const o=document.createElement("option");o.value=v;o.textContent=v;el.appendChild(o)});state.subject=subject;state.concept=el.value;}
 $("subject").addEventListener("change",fillConcepts);fillConcepts();
-$("startBtn").addEventListener("click",start);$("sendBtn").addEventListener("click",send);$("submitDiagnosis").addEventListener("click",submitDiagnosis);$("submitTransfer").addEventListener("click",submitTransfer);$("transferFiles").addEventListener("change",async e=>{try{await readAttachments([...e.target.files]);$("notice").textContent="附件已添加。提交时将随答案一起发送。";}catch(err){$("notice").textContent="附件读取失败："+err.message;}});$("message").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send()}});$("apiKey").addEventListener("input",()=>{$("modePill").textContent=$("apiKey").value.trim()?"自定义 API":"内置 AI"});$("modelSelect").addEventListener("change",()=>{$("modelCustom").value="";$("apiHint").textContent="当前选择模型："+getModel();});$("loadModelsBtn").addEventListener("click",loadModels);$("testApiBtn").addEventListener("click",testApi);loadModels();
+$("startBtn").addEventListener("click",start);$("sendBtn").addEventListener("click",send);$("submitDiagnosis").addEventListener("click",submitDiagnosis);$("submitTransfer").addEventListener("click",submitTransfer);async function addTransferFiles(files){try{await readAttachments([...files]);$("notice").textContent="附件已添加。提交时将随答案一起发送。";}catch(err){$("notice").textContent="附件读取失败："+err.message;}}
+$("imageInputBtn").addEventListener("click",()=>$("transferImageInput").click());
+$("fileInputBtn").addEventListener("click",()=>$("transferFileInput").click());
+$("transferImageInput").addEventListener("change",e=>addTransferFiles(e.target.files));
+$("transferFileInput").addEventListener("change",e=>addTransferFiles(e.target.files));
+$("linkInputBtn").addEventListener("click",()=>{const url=prompt("请输入要附上的网页链接：");if(url){const value=url.trim();if(!(value.startsWith("http://")||value.startsWith("https://"))){$("notice").textContent="请输入以 http:// 或 https:// 开头的有效链接。";return;}const ta=$("transferAnswer");ta.value+=(ta.value?"\\n":"")+"参考链接："+value;ta.focus();}});
+let speechRecognition=null;
+$("voiceInputBtn").addEventListener("click",()=>{
+ const Speech=window.SpeechRecognition||window.webkitSpeechRecognition;
+ if(!Speech){$("notice").textContent="当前浏览器暂不支持语音输入，请使用 Chrome 或 Edge，或直接输入文字。";return;}
+ if(speechRecognition){speechRecognition.stop();return;}
+ speechRecognition=new Speech();speechRecognition.lang="zh-CN";speechRecognition.continuous=true;speechRecognition.interimResults=true;
+ const btn=$("voiceInputBtn"),ta=$("transferAnswer");let finalText="";
+ btn.classList.add("recording");$("notice").textContent="正在聆听，再次点击麦克风即可结束。";
+ speechRecognition.onresult=e=>{let interim="";for(let i=e.resultIndex;i<e.results.length;i++){const part=e.results[i][0].transcript;if(e.results[i].isFinal)finalText+=part;else interim+=part;}ta.value=ta.value.replace(/\\[语音识别中\\][\\s\\S]*$/,"");ta.value+=(ta.value&&!ta.value.endsWith("\\n")?"\\n":"")+(finalText+(interim?" [语音识别中] "+interim:""));};
+ speechRecognition.onerror=e=>{$("notice").textContent="语音输入暂时中断："+e.error;};
+ speechRecognition.onend=()=>{btn.classList.remove("recording");speechRecognition=null;$("notice").textContent="语音输入已结束，识别文字已放入答案框。";};
+ speechRecognition.start();
+});$("message").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send()}});$("apiKey").addEventListener("input",()=>{$("modePill").textContent=$("apiKey").value.trim()?"自定义 API":"内置 AI"});$("modelSelect").addEventListener("change",()=>{$("modelCustom").value="";$("apiHint").textContent="当前选择模型："+getModel();});$("loadModelsBtn").addEventListener("click",loadModels);$("testApiBtn").addEventListener("click",testApi);loadModels();
 const finish=document.createElement("button");finish.id="finishChatBtn";finish.className="btn secondary hidden";finish.textContent="我准备好诊断了";finish.addEventListener("click",async()=>{setPhase(2);await prepareDiagnosisQuiz();});$("composerActions");document.querySelector(".composer-actions").appendChild(finish);
 </script>
 </body>
