@@ -74,6 +74,22 @@ footer{max-width:1120px;margin:0 auto;padding:0 20px 30px;color:#8a96a4;font-siz
 @media(max-width:600px){.rewardbar{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.rewardtile{padding:10px}.rewardtile strong{font-size:17px}.questline{align-items:flex-start;flex-direction:column}}
 
 .message-content{overflow-wrap:anywhere;word-break:normal;line-height:1.8}.message-content mjx-container{max-width:100%;overflow-x:auto;overflow-y:hidden;padding:2px 0}.question-body mjx-container{max-width:100%;overflow-x:auto;overflow-y:hidden}
+
+/* 深色模式：对话区与提示区统一为低亮度深色，避免白色板块刺眼 */
+body.dark-mode .welcome{background:#202d3d;border-color:#35475c;color:#e7edf5}
+body.dark-mode .welcome h2{color:#edf3fb}
+body.dark-mode .welcome p{color:#b4c2d2}
+body.dark-mode .bubble{background:#263548;border-color:#3b4d63;color:#e3ebf5}
+body.dark-mode .bubble .who{color:#aebdd0}
+body.dark-mode .student .bubble{background:#203b36;border-color:#31594f;color:#e0f0e9}
+body.dark-mode .avatar{background:#34465c;color:#d8e6f7}
+body.dark-mode .msg.student .avatar{background:#29483f;color:#cce9dc}
+body.dark-mode .notice{background:#202f40;border-color:#354b63;color:#d6e1ee}
+body.dark-mode .composer{background:#151f2c;border-color:#354456}
+body.dark-mode .composer textarea{background:#202e3e;color:#e7edf5;border-color:#405166}
+body.dark-mode .composer textarea::placeholder{color:#9aabbe;opacity:1}
+body.dark-mode .composer-actions small{color:#aab7c7}
+body.dark-mode footer{background:#111a26;color:#9eacbd;border-color:#354456}
 /* 深色模式配色 */
 body.dark-mode{--ink:#e7edf5;--muted:#aab7c7;--line:#354456;--paper:#111a26;--white:#1b2735;--blue2:#263d59;--green2:#203c34;--orange2:#493526;background:var(--paper);color:var(--ink)}
 body.dark-mode header,body.dark-mode .panel,body.dark-mode .rewardtile,body.dark-mode .settings-card{background:var(--white);color:var(--ink);border-color:var(--line)}
