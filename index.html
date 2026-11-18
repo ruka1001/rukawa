@@ -115,7 +115,7 @@ footer{max-width:1120px;margin:0 auto;padding:0 20px 30px;color:#8a96a4;font-siz
     <div class="field"><label>学科</label><select id="subject"><option>物理</option><option>数学</option></select></div>
     <div class="field"><label>高中学习概念</label><select id="concept"></select></div>
     <button class="btn primary full" id="startBtn">生成装懂同伴</button>
-    <p class="hint">建议先从熟悉的概念开始。每轮只诊断一个核心漏洞。</p>
+    
     <hr>
     <h3>AI 模型设置（可选）</h3>
     <div class="field"><label>选择 AI 模型</label><select id="modelSelect">
@@ -453,8 +453,8 @@ function renderQuestion(containerId,q,mode="original"){
 function showOriginalQuestion(){
  const q=state.activeQuestion||examBank[state.concept];if(!q)return;
  $("originalQuestionCard").classList.remove("hidden");$("originalTitle").textContent=q.title;$("originalMeta").textContent=q.meta;
- $("originalLink").textContent="需要时查看原卷 PDF（可选）";$("originalLink").href=q.url+"#page="+(q.page||1);
- $("questionSourceNote").textContent="本题来自真实试卷。题干在网页中呈现，原卷 PDF 可用于核对完整版式与原始配图。下方同伴分析为教学设计内容，不属于原卷内容。";
+ $("originalLink").textContent="查看原卷（PDF）";$("originalLink").href=q.url+"#page="+(q.page||1);
+ $("questionSourceNote").textContent="";
  renderQuestion("originalQuestionBody",q);
 }
 async function start(){state.subject=$("subject").value;state.concept=$("concept").value;state.history=[];state.turns=0;state.hints=0;state.initial=null;state.diagnosis=null;state.diagnosisQuiz=null;state.aiCorrected=false;state.report=null;state.attachments=[];state.earnedDiagnosis=false;state.earnedTransfer=false;state.activeQuestion=pickQuestion(state.concept);$("chat").innerHTML="";$("welcome").classList.add("hidden");$("reportArea").classList.add("hidden");$("transferArea").classList.add("hidden");$("diagnosisArea").classList.add("hidden");$("diagnosisNote").value="";$("transferAnswer").value="";$("transferImageInput").value="";$("transferFileInput").value="";$("attachmentPreview").innerHTML="";showOriginalQuestion();setPhase(1);addMsg("student",`我想考考你：${state.concept}。请你结合上方题目，解释你的解题思路。`);setBusy(true);
@@ -596,10 +596,9 @@ function showDiagnosisResult(feedback){
  const card=$("diagnosisResult");
  card.innerHTML="";
  const title=document.createElement("h3");title.textContent="本轮诊断结果";
- const lead=document.createElement("div");lead.className="result-lead";lead.textContent="AI 已结合你的选择、追问过程和原题内容完成分析。";
  const content=document.createElement("div");content.className="result-content message-content";content.textContent=normalizeMathText(feedback);
  const next=document.createElement("div");next.className="result-next";next.textContent="诊断已完成。下面将进入独立迁移挑战，请尝试把刚才厘清的概念应用到新的真实试题中。";
- card.append(title,lead,content,next);
+ card.append(title,content,next);
  card.classList.remove("hidden");
  renderMessageMath(content);
 }
